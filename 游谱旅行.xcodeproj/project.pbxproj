@@ -1,0 +1,475 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4F13BCAF197E5E07001DC883 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F13BCAE197E5E07001DC883 /* Foundation.framework */; };
+		4F13BCB1197E5E07001DC883 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F13BCB0197E5E07001DC883 /* CoreGraphics.framework */; };
+		4F13BCB3197E5E07001DC883 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F13BCB2197E5E07001DC883 /* UIKit.framework */; };
+		4F13BCB5197E5E07001DC883 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F13BCB4197E5E07001DC883 /* CoreData.framework */; };
+		4F13BCBB197E5E07001DC883 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4F13BCB9197E5E07001DC883 /* InfoPlist.strings */; };
+		4F13BCBD197E5E07001DC883 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F13BCBC197E5E07001DC883 /* main.m */; };
+		4F13BCC1197E5E07001DC883 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F13BCC0197E5E07001DC883 /* AppDelegate.m */; };
+		4F13BCC4197E5E07001DC883 /* ____.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4F13BCC2197E5E07001DC883 /* ____.xcdatamodeld */; };
+		4F13BCC6197E5E07001DC883 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4F13BCC5197E5E07001DC883 /* Images.xcassets */; };
+		4F13BCCD197E5E07001DC883 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F13BCCC197E5E07001DC883 /* XCTest.framework */; };
+		4F13BCCE197E5E07001DC883 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F13BCAE197E5E07001DC883 /* Foundation.framework */; };
+		4F13BCCF197E5E07001DC883 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F13BCB2197E5E07001DC883 /* UIKit.framework */; };
+		4F13BCD0197E5E07001DC883 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F13BCB4197E5E07001DC883 /* CoreData.framework */; };
+		4F13BCD8197E5E07001DC883 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4F13BCD6197E5E07001DC883 /* InfoPlist.strings */; };
+		4F13BCDA197E5E07001DC883 /* ____Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F13BCD9197E5E07001DC883 /* ____Tests.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		4F13BCD1197E5E07001DC883 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4F13BCA3197E5E07001DC883 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4F13BCAA197E5E07001DC883;
+			remoteInfo = "游谱旅行";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		4F13BCAB197E5E07001DC883 /* 游谱旅行.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "游谱旅行.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F13BCAE197E5E07001DC883 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		4F13BCB0197E5E07001DC883 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		4F13BCB2197E5E07001DC883 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		4F13BCB4197E5E07001DC883 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		4F13BCB8197E5E07001DC883 /* 游谱旅行-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "游谱旅行-Info.plist"; sourceTree = "<group>"; };
+		4F13BCBA197E5E07001DC883 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		4F13BCBC197E5E07001DC883 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		4F13BCBE197E5E07001DC883 /* 游谱旅行-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "游谱旅行-Prefix.pch"; sourceTree = "<group>"; };
+		4F13BCBF197E5E07001DC883 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		4F13BCC0197E5E07001DC883 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		4F13BCC3197E5E07001DC883 /* ____.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "____.xcdatamodel"; sourceTree = "<group>"; };
+		4F13BCC5197E5E07001DC883 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		4F13BCCB197E5E07001DC883 /* 游谱旅行Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "游谱旅行Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4F13BCCC197E5E07001DC883 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		4F13BCD5197E5E07001DC883 /* 游谱旅行Tests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "游谱旅行Tests-Info.plist"; sourceTree = "<group>"; };
+		4F13BCD7197E5E07001DC883 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		4F13BCD9197E5E07001DC883 /* ____Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "____Tests.m"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4F13BCA8197E5E07001DC883 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F13BCB1197E5E07001DC883 /* CoreGraphics.framework in Frameworks */,
+				4F13BCB5197E5E07001DC883 /* CoreData.framework in Frameworks */,
+				4F13BCB3197E5E07001DC883 /* UIKit.framework in Frameworks */,
+				4F13BCAF197E5E07001DC883 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F13BCC8197E5E07001DC883 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F13BCCD197E5E07001DC883 /* XCTest.framework in Frameworks */,
+				4F13BCD0197E5E07001DC883 /* CoreData.framework in Frameworks */,
+				4F13BCCF197E5E07001DC883 /* UIKit.framework in Frameworks */,
+				4F13BCCE197E5E07001DC883 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4F13BCA2197E5E07001DC883 = {
+			isa = PBXGroup;
+			children = (
+				4F13BCB6197E5E07001DC883 /* 游谱旅行 */,
+				4F13BCD3197E5E07001DC883 /* 游谱旅行Tests */,
+				4F13BCAD197E5E07001DC883 /* Frameworks */,
+				4F13BCAC197E5E07001DC883 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		4F13BCAC197E5E07001DC883 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4F13BCAB197E5E07001DC883 /* 游谱旅行.app */,
+				4F13BCCB197E5E07001DC883 /* 游谱旅行Tests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4F13BCAD197E5E07001DC883 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4F13BCAE197E5E07001DC883 /* Foundation.framework */,
+				4F13BCB0197E5E07001DC883 /* CoreGraphics.framework */,
+				4F13BCB2197E5E07001DC883 /* UIKit.framework */,
+				4F13BCB4197E5E07001DC883 /* CoreData.framework */,
+				4F13BCCC197E5E07001DC883 /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		4F13BCB6197E5E07001DC883 /* 游谱旅行 */ = {
+			isa = PBXGroup;
+			children = (
+				4F13BCBF197E5E07001DC883 /* AppDelegate.h */,
+				4F13BCC0197E5E07001DC883 /* AppDelegate.m */,
+				4F13BCC5197E5E07001DC883 /* Images.xcassets */,
+				4F13BCC2197E5E07001DC883 /* ____.xcdatamodeld */,
+				4F13BCB7197E5E07001DC883 /* Supporting Files */,
+			);
+			path = "游谱旅行";
+			sourceTree = "<group>";
+		};
+		4F13BCB7197E5E07001DC883 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				4F13BCB8197E5E07001DC883 /* 游谱旅行-Info.plist */,
+				4F13BCB9197E5E07001DC883 /* InfoPlist.strings */,
+				4F13BCBC197E5E07001DC883 /* main.m */,
+				4F13BCBE197E5E07001DC883 /* 游谱旅行-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		4F13BCD3197E5E07001DC883 /* 游谱旅行Tests */ = {
+			isa = PBXGroup;
+			children = (
+				4F13BCD9197E5E07001DC883 /* ____Tests.m */,
+				4F13BCD4197E5E07001DC883 /* Supporting Files */,
+			);
+			path = "游谱旅行Tests";
+			sourceTree = "<group>";
+		};
+		4F13BCD4197E5E07001DC883 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				4F13BCD5197E5E07001DC883 /* 游谱旅行Tests-Info.plist */,
+				4F13BCD6197E5E07001DC883 /* InfoPlist.strings */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4F13BCAA197E5E07001DC883 /* 游谱旅行 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4F13BCDD197E5E07001DC883 /* Build configuration list for PBXNativeTarget "游谱旅行" */;
+			buildPhases = (
+				4F13BCA7197E5E07001DC883 /* Sources */,
+				4F13BCA8197E5E07001DC883 /* Frameworks */,
+				4F13BCA9197E5E07001DC883 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "游谱旅行";
+			productName = "游谱旅行";
+			productReference = 4F13BCAB197E5E07001DC883 /* 游谱旅行.app */;
+			productType = "com.apple.product-type.application";
+		};
+		4F13BCCA197E5E07001DC883 /* 游谱旅行Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4F13BCE0197E5E07001DC883 /* Build configuration list for PBXNativeTarget "游谱旅行Tests" */;
+			buildPhases = (
+				4F13BCC7197E5E07001DC883 /* Sources */,
+				4F13BCC8197E5E07001DC883 /* Frameworks */,
+				4F13BCC9197E5E07001DC883 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4F13BCD2197E5E07001DC883 /* PBXTargetDependency */,
+			);
+			name = "游谱旅行Tests";
+			productName = "游谱旅行Tests";
+			productReference = 4F13BCCB197E5E07001DC883 /* 游谱旅行Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		4F13BCA3197E5E07001DC883 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "___FULLUSERNAME___";
+				TargetAttributes = {
+					4F13BCCA197E5E07001DC883 = {
+						TestTargetID = 4F13BCAA197E5E07001DC883;
+					};
+				};
+			};
+			buildConfigurationList = 4F13BCA6197E5E07001DC883 /* Build configuration list for PBXProject "游谱旅行" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 4F13BCA2197E5E07001DC883;
+			productRefGroup = 4F13BCAC197E5E07001DC883 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4F13BCAA197E5E07001DC883 /* 游谱旅行 */,
+				4F13BCCA197E5E07001DC883 /* 游谱旅行Tests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4F13BCA9197E5E07001DC883 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F13BCBB197E5E07001DC883 /* InfoPlist.strings in Resources */,
+				4F13BCC6197E5E07001DC883 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F13BCC9197E5E07001DC883 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F13BCD8197E5E07001DC883 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4F13BCA7197E5E07001DC883 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F13BCC1197E5E07001DC883 /* AppDelegate.m in Sources */,
+				4F13BCC4197E5E07001DC883 /* ____.xcdatamodeld in Sources */,
+				4F13BCBD197E5E07001DC883 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4F13BCC7197E5E07001DC883 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4F13BCDA197E5E07001DC883 /* ____Tests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		4F13BCD2197E5E07001DC883 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4F13BCAA197E5E07001DC883 /* 游谱旅行 */;
+			targetProxy = 4F13BCD1197E5E07001DC883 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		4F13BCB9197E5E07001DC883 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4F13BCBA197E5E07001DC883 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		4F13BCD6197E5E07001DC883 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				4F13BCD7197E5E07001DC883 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		4F13BCDB197E5E07001DC883 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		4F13BCDC197E5E07001DC883 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		4F13BCDE197E5E07001DC883 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "游谱旅行/游谱旅行-Prefix.pch";
+				INFOPLIST_FILE = "游谱旅行/游谱旅行-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		4F13BCDF197E5E07001DC883 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "游谱旅行/游谱旅行-Prefix.pch";
+				INFOPLIST_FILE = "游谱旅行/游谱旅行-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		4F13BCE1197E5E07001DC883 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/游谱旅行.app/游谱旅行";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "游谱旅行/游谱旅行-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "游谱旅行Tests/游谱旅行Tests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Debug;
+		};
+		4F13BCE2197E5E07001DC883 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/游谱旅行.app/游谱旅行";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+					"$(DEVELOPER_FRAMEWORKS_DIR)",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "游谱旅行/游谱旅行-Prefix.pch";
+				INFOPLIST_FILE = "游谱旅行Tests/游谱旅行Tests-Info.plist";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUNDLE_LOADER)";
+				WRAPPER_EXTENSION = xctest;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4F13BCA6197E5E07001DC883 /* Build configuration list for PBXProject "游谱旅行" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F13BCDB197E5E07001DC883 /* Debug */,
+				4F13BCDC197E5E07001DC883 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4F13BCDD197E5E07001DC883 /* Build configuration list for PBXNativeTarget "游谱旅行" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F13BCDE197E5E07001DC883 /* Debug */,
+				4F13BCDF197E5E07001DC883 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		4F13BCE0197E5E07001DC883 /* Build configuration list for PBXNativeTarget "游谱旅行Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F13BCE1197E5E07001DC883 /* Debug */,
+				4F13BCE2197E5E07001DC883 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		4F13BCC2197E5E07001DC883 /* ____.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				4F13BCC3197E5E07001DC883 /* ____.xcdatamodel */,
+			);
+			currentVersion = 4F13BCC3197E5E07001DC883 /* ____.xcdatamodel */;
+			path = "____.xcdatamodeld";
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 4F13BCA3197E5E07001DC883 /* Project object */;
+}
