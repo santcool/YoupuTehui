@@ -8,6 +8,7 @@
 
 #import "AppDelegate.h"
 
+
 @implementation AppDelegate
 
 @synthesize managedObjectContext = _managedObjectContext;
@@ -19,8 +20,124 @@
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
+    
+    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert];
+     [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
+    //注册
+    [MiPushSDK registerMiPush:self];
+    
+    [ShareSDK registerApp:@"2e9c8aa076c6"];
+    [self initializePlat];
+    [self dingwei];
+    
+    
+    MainViewController *main = [[MainViewController alloc]init];
+    MadeOfMeViewController * made = [[MadeOfMeViewController alloc] init];
+    AddViewController *add = [[AddViewController alloc] init];
+    MaxOutViewController *max = [[MaxOutViewController alloc] init];
+    PersonalCenterViewController *person = [[PersonalCenterViewController alloc] init];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:main];
+    [nav setNavigationBarHidden:YES];
+    UINavigationController *navi = [[UINavigationController alloc] initWithRootViewController:made];
+    UINavigationController *naviga = [[UINavigationController alloc] initWithRootViewController:add];
+    UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:max];
+    UINavigationController *navigationqzy = [[UINavigationController alloc] initWithRootViewController:person];
+    
+    
+    self.tab= [[TabBarController alloc] init];
+    NSArray *arr = [NSArray arrayWithObjects:nav,navi,naviga,navigation,navigationqzy, nil];
+
+    [_tab setViewControllers:arr];
+    [_tab createButtons];
+    [_window setRootViewController:_tab];
+    
+    [application setStatusBarHidden:NO];
+    
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+    
     [self.window makeKeyAndVisible];
     return YES;
+}
+
+-(void)dingwei{
+    
+    if ([CLLocationManager locationServicesEnabled] == YES) {
+        
+        _locationManager = [[CLLocationManager alloc] init];//创建位置管理器
+        _locationManager.delegate=self;
+        _locationManager.desiredAccuracy=kCLLocationAccuracyBest;
+        _locationManager.distanceFilter=1000.0f;
+        //启动位置更新
+        [_locationManager startUpdatingLocation];
+    }
+    
+}
+
+-(void)initializePlat{
+    
+    //QQ空间
+    [ShareSDK connectQZoneWithAppKey:@"101118214" appSecret:@"1aac0ad683fd87c06bfa8165a6e6f446" qqApiInterfaceCls:[QQApiInterface class] tencentOAuthCls:[TencentOAuth class]];
+    
+    //新浪微博
+    [ShareSDK connectSinaWeiboWithAppKey:@"1869670483" appSecret:@"a55f9095d2df8303a76cc0167afc353c" redirectUri:@"http://tehui.youpu.cn"];
+    
+    //QQ好友分享
+    [ShareSDK connectQQWithQZoneAppKey:@"101118214"  qqApiInterfaceCls:[QQApiInterface class] tencentOAuthCls:[TencentOAuth class]];
+    
+    //微信朋友圈分享
+    [ShareSDK  connectWeChatTimelineWithAppId:@"wx63ec62937ce1018d" wechatCls:[WXApi class]];
+    
+    //微信好友分享
+    [ShareSDK connectWeChatSessionWithAppId:@"wx63ec62937ce1018d" wechatCls:[WXApi class]];
+    
+} 
+
+
+- (BOOL)application:(UIApplication *)application
+      handleOpenURL:(NSURL *)url
+{
+    return [ShareSDK handleOpenURL:url
+                        wxDelegate:self];
+    return [TencentOAuth HandleOpenURL:url];
+}
+
+
+- (BOOL)application:(UIApplication *)application
+            openURL:(NSURL *)url
+  sourceApplication:(NSString  *)sourceApplication
+         annotation:(id)annotation
+{
+    return [ShareSDK handleOpenURL:url
+                 sourceApplication:sourceApplication
+                        annotation:annotation
+                        wxDelegate:self];
+    return [TencentOAuth HandleOpenURL:url];
+}
+
+-(void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
+{
+    [MiPushSDK bindDeviceToken:deviceToken];
+    [MiPushSDK setAlias:[[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"]];
+    [MiPushSDK  subscribe:@"ios"];
+}
+
+-(void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error{
+    
+    NSLog(@"%@",error);
+}
+
+// 请求成功
+- (void)miPushRequestSuccWithSelector:(NSString *)selector data:(NSDictionary *)data
+{
+    NSLog(@"%@",data);
+}
+
+// 请求失败
+- (void)miPushRequestErrWithSelector:(NSString *)selector error:(int)error data:(NSDictionary *)data
+{
+    NSLog(@"%@",selector);
+    NSLog(@"%@",data);
+   
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application
@@ -44,6 +161,7 @@
 {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
 }
+
 
 - (void)applicationWillTerminate:(UIApplication *)application
 {

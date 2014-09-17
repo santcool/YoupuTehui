@@ -14,4 +14,28 @@
     #import <UIKit/UIKit.h>
     #import <Foundation/Foundation.h>
     #import <CoreData/CoreData.h>
+    #import "ConnectModel.h"
+    #import <CommonCrypto/CommonDigest.h>
+    #import "UIImageView+WebCache.h"
+    #import "TouchImage.h"
+    #import "NavigationView.h"
+    #import "WhiteLableText.h"
+    #import "FirstTableViewCell.h"
+    #import "SingleClass.h"
+    #import "LoginViewController.h"
+    #import "MadeOfMeViewController.h"
+    #import "AddViewController.h"
+    #import <MobileCoreServices/MobileCoreServices.h>
+    #import <SystemConfiguration/SystemConfiguration.h>
+    #import "TabBarController.h"
+    #import "MainViewController.h"
+    #import "MadeOfMeViewController.h"
+    #import "AddViewController.h"
+    #import "MaxOutViewController.h"
+    #import "PersonalCenterViewController.h"
+    #import "CustomTextField.h"
+    #import "ConditionTableViewCell.h"
+    #import "SVPullToRefresh.h"
+    #import "UIScrollView+SVInfiniteScrolling.h"
+    #import "AppDelegate.h"
 #endif

@@ -7,10 +7,30 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "MainViewController.h"
+#import "MadeOfMeViewController.h"
+#import "AddViewController.h"
+#import "MaxOutViewController.h"
+#import "PersonalCenterViewController.h"
+#import <ShareSDK/ShareSDK.h>
+#import <TencentOpenAPI/TencentOAuth.h>
+#import <TencentOpenAPI/QQApiInterface.h>
+#import "WeiboApi.h"
+#import "WXApi.h"
+#import "TabBarController.h"
 
-@interface AppDelegate : UIResponder <UIApplicationDelegate>
+#import "WeiboSDK.h"
+#import "MiPushSDK.h"
+
+
+@interface AppDelegate : UIResponder <UIApplicationDelegate,CLLocationManagerDelegate,UITabBarControllerDelegate,UITabBarDelegate,MiPushSDKDelegate>
+{
+    CLLocationManager *  _locationManager;
+    
+}
 
 @property (strong, nonatomic) UIWindow *window;
+@property (strong, nonatomic) TabBarController *tab;
 
 @property (readonly, strong, nonatomic) NSManagedObjectContext *managedObjectContext;
 @property (readonly, strong, nonatomic) NSManagedObjectModel *managedObjectModel;

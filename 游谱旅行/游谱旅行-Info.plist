@@ -5,11 +5,11 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>${PRODUCT_NAME}</string>
+	<string>游谱特惠</string>
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIdentifier</key>
-	<string>QZY.${PRODUCT_NAME:rfc1034identifier}</string>
+	<string>com.youpu.tehui</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -20,6 +20,40 @@
 	<string>1.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>tehui.youpu.cn</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>tehui.you.cn</string>
+			</array>
+		</dict>
+		<dict>
+			<key>MiSDKAppID</key>
+			<string>2882303761517255139</string>
+			<key>MiSDKAppKey</key>
+			<string>5201725592139</string>
+			<key>MiSDKRun</key>
+			<string>Debug</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string></string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>wb1869670483</string>
+				<string>wb3112641169</string>
+				<string>QQ0606F106</string>
+				<string>wx63ec62937ce1018d</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -31,8 +65,14 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+	<key>MiSDKAppID</key>
+	<string>2882303761517255139</string>
+	<key>MiSDKAppKey</key>
+	<string>5201725592139</string>
+	<key>MiSDKRun</key>
+	<string>Debug</string>
 </dict>
 </plist>
