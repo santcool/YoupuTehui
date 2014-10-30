@@ -207,7 +207,6 @@
     self.table = [[UITableView alloc] initWithFrame:CGRectMake(0, 40, self.view.frame.size.width, self.view.frame.size.height-104) style:UITableViewStylePlain];
     _table.delegate = self;
     _table.dataSource = self;
-//    [_table setEditing:YES];
     
     [self lineHidden:_table];
     [self.view addSubview:_table];
@@ -260,11 +259,6 @@
     return UITableViewCellEditingStyleDelete | UITableViewCellEditingStyleInsert;
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
 
 /*
 #pragma mark - Navigation
