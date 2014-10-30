@@ -210,7 +210,6 @@
 //    [_table setEditing:YES];
     
     [self lineHidden:_table];
-    ;;
     [self.view addSubview:_table];
 }
 
