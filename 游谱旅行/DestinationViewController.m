@@ -12,7 +12,7 @@ static DestinationViewController * destination = nil;
 
 @interface DestinationViewController ()
 {
-    UIActivityIndicatorView * _indicator;//菊花
+    MBProgressHUD * _progressHUD;
     NSInteger _i;
 }
 
@@ -51,11 +51,13 @@ static DestinationViewController * destination = nil;
         self.resultIdArray = [[NSMutableArray alloc]init];
         _i=0;
         
+        
     }
     return self;
 }
 
 -(void)viewWillAppear:(BOOL)animated{
+    
     [self setNavigationBar];
 
 }
@@ -73,24 +75,25 @@ static DestinationViewController * destination = nil;
     [self createTable];
     [self connect];
     [self createSearchBar];
-    
-    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 20)];
-    view.backgroundColor = [UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1];
-    [self.navigationController.view addSubview:view];
  
 }
 
 //添加菊花
 -(void)addIndicator
 {
-    if (!_indicator.isAnimating) {
-        //添加菊花
-        _indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        [_indicator setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.5]];
-        [_indicator setColor:[UIColor colorWithRed:224/255.0  green:89/255.0 blue:60/255.0 alpha:1]];
-        [_indicator setFrame:CGRectMake(0,0, self.view.frame.size.width, self.view.frame.size.height)];
-        [_indicator startAnimating];
-        [self.view addSubview:_indicator];
+    _progressHUD = [[MBProgressHUD alloc] initWithView:self.view];
+    [self.view addSubview:_progressHUD];
+    [self.view bringSubviewToFront:_progressHUD];
+    [_progressHUD setMode:MBProgressHUDModeIndeterminate];
+    [_progressHUD setLabelText:@"加载中..."];
+    [_progressHUD showWhileExecuting:@selector(myProgressTask) onTarget:self withObject:nil animated:YES];
+}
+-(void) myProgressTask{
+    float progress = 0.0f;
+    while (progress < 1.0f) {
+        progress -=0.01f;
+        _progressHUD.progress = progress;
+        usleep(50000);
     }
 }
 
@@ -101,12 +104,14 @@ static DestinationViewController * destination = nil;
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
-    self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
     
     
 }
@@ -114,7 +119,7 @@ static DestinationViewController * destination = nil;
 -(void)backActon{
     
     if ([_titleStr isEqualToString:@"目的地"]) {
-        [self.delegate desColor:[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1]];
+        [self.delegate desColor:[UIColor whiteColor]];
     }else{
     
         [self.delegate desColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
@@ -145,17 +150,21 @@ static DestinationViewController * destination = nil;
 #pragma mark - searchBar的协议等相关方法
 -(void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
 {
+    UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 20)];
+    view.backgroundColor = [UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1];
+    [self.navigationController.view addSubview:view];
+    
     [_search setShowsCancelButton:YES animated:NO];
     CGRect frame = self.search.frame;
     frame.origin.y = 20;
     self.search.frame = frame;
 }
 
-- (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
-    CGRect frame = self.search.frame;
-    frame.origin.y = 0;
-    self.search.frame = frame;
-}
+//- (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
+//    CGRect frame = self.search.frame;
+//    frame.origin.y = 0;
+//    self.search.frame = frame;
+//}
 
 - (void)searchBarCancelButtonClicked:(UISearchBar *) searchBar
 {
@@ -166,19 +175,6 @@ static DestinationViewController * destination = nil;
     [searchBar setShowsCancelButton:NO animated:NO];
 }
 
--(void)searchBarSearchButtonClicked:(UISearchBar *)searchBar{
-    
-    for (int i = 0; i<[_arr count]; i++) {
-        NSString * cityName = [_arr objectAtIndex:i];
-        
-        NSPredicate * pridicate =[NSPredicate predicateWithFormat:@"self == %@",_search.text];
-        BOOL _isexit = [pridicate evaluateWithObject:cityName];
-        if (_isexit ==YES) {
-            [self.resultArray addObject:cityName];
-        }
-        
-    }
-}
 
 - (BOOL)searchDisplayController:(UISearchDisplayController *)controller
 shouldReloadTableForSearchString:(NSString *)searchString{
@@ -200,21 +196,6 @@ shouldReloadTableForSearchString:(NSString *)searchString{
 }
 
 #pragma mark
-#pragma mark -大加密
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
-}
-#pragma mark
 #pragma mark - 筛选条件网络请求
 -(void)connect{
     
@@ -228,16 +209,16 @@ shouldReloadTableForSearchString:(NSString *)searchString{
     //加密规则
     NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
     NSString * QZY = [NSString stringWithFormat:@"%@%@",timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",kFilterUrl,time];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kFilterUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",url,time];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         
@@ -245,8 +226,8 @@ shouldReloadTableForSearchString:(NSString *)searchString{
         [self.dictionary addEntriesFromDictionary:dic];
         
         [_destinationTable reloadData];
-        [_indicator stopAnimating];
-        [_indicator removeFromSuperview];
+        [_progressHUD hide:YES];
+        [_progressHUD removeFromSuperViewOnHide];
         
         NSDictionary * dicc = [self.dictionary objectForKey:@"data"];
         NSArray * arr = [dicc objectForKey:@"toCity"];
@@ -273,6 +254,8 @@ shouldReloadTableForSearchString:(NSString *)searchString{
     
     _destinationTable.delegate = self;
     _destinationTable.dataSource = self;
+    [_destinationTable  setShowsHorizontalScrollIndicator:NO];
+    [_destinationTable setShowsVerticalScrollIndicator:NO];
     
     [self.view addSubview:_destinationTable];
     
@@ -281,6 +264,8 @@ shouldReloadTableForSearchString:(NSString *)searchString{
     _rightTable.dataSource = self;
     _rightTable.scrollEnabled = YES;
     _rightTable.hidden = YES;
+    [_rightTable setShowsHorizontalScrollIndicator:NO];
+    [_rightTable setShowsVerticalScrollIndicator:NO];
     [_rightTable setBackgroundColor:[UIColor whiteColor]];
     [_rightTable setSeparatorStyle:UITableViewCellSeparatorStyleNone];
     
@@ -313,10 +298,10 @@ shouldReloadTableForSearchString:(NSString *)searchString{
     if ([tableView isEqual:self.destinationTable])
     {
         static NSString * cellIdentify = @"cell";
-        UITableViewCell * cell  = [tableView dequeueReusableCellWithIdentifier:cellIdentify];
+        DestinationTableViewCell * cell  = [tableView dequeueReusableCellWithIdentifier:cellIdentify];
         if (cell == nil)
         {
-            cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentify];
+            cell = [[DestinationTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentify];
        
         }
         NSDictionary * dic = [self.dictionary objectForKey:@"data"];
@@ -325,10 +310,12 @@ shouldReloadTableForSearchString:(NSString *)searchString{
         [cell.textLabel setText:[nameDic objectForKey:@"name"]];
         
         UIView * view= [[UIView alloc] init];
-        [view setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.1]];
+        [view setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.05]];
         cell.selectedBackgroundView = view;
         
         [cell.textLabel setFont:[UIFont systemFontOfSize:16]];
+    
+        
         return cell;
     }
     else if(tableView ==self.rightTable)
@@ -348,6 +335,15 @@ shouldReloadTableForSearchString:(NSString *)searchString{
         cell1.backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.05];
 
         [cell1.textLabel setFont:[UIFont systemFontOfSize:16]];
+        
+        for (int i = 0; i < [_valueArray count]; i++) {
+            NSDictionary * dic = [_valueArray objectAtIndex:indexPath.row];
+            if ([[dic objectForKey:@"name"]isEqualToString:_countryName]) {
+                _lastpath = indexPath;
+                [cell1.image setImage:[UIImage imageNamed:@"钩钩"]];
+            }
+
+        }
         
         if (_lastpath != nil) {
             if (_lastpath.row == indexPath.row) {
@@ -376,7 +372,6 @@ shouldReloadTableForSearchString:(NSString *)searchString{
             cell1 = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentify];
             
         }
-        
         [cell1.textLabel setText:[self.resultArray objectAtIndex:indexPath.row]];
         [cell1.textLabel setFont:[UIFont systemFontOfSize:16]];
         return cell1;
@@ -388,22 +383,27 @@ shouldReloadTableForSearchString:(NSString *)searchString{
     
     if (tableView == self.destinationTable)
     {
+        if (_desPath!= indexPath) {
+            _lastpath =nil;
+        }
         if (indexPath.row == 0)
         {
+            _countryName = nil;
             NSDictionary * dic = [self.dictionary objectForKey:@"data"];
             NSArray * array = [dic objectForKey:@"toCity"];
             NSDictionary * dictionary = [array objectAtIndex:indexPath.row];
             [_rightTable setHidden:YES];
             [self.delegate destination:[dictionary objectForKey:@"name"]];
+            NSDictionary * name = [NSDictionary dictionaryWithObjectsAndKeys:@"0",@"string",nil];
+            SingleClass * single  = [SingleClass singleClass];
+            [single.singleDic addEntriesFromDictionary:name];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"qzy" object:nil userInfo:single.singleDic];
             
             [self dismissViewControllerAnimated:YES completion:nil];
         }
         else
         {
-            if (_desPath.row != indexPath.row) {
-                _lastpath =nil;
-                
-            }
+            
             NSDictionary * dic = [self.dictionary objectForKey:@"data"];
             NSArray * array = [dic objectForKey:@"toCity"];
             NSDictionary * dictionary = [array objectAtIndex:indexPath.row];
@@ -434,12 +434,13 @@ shouldReloadTableForSearchString:(NSString *)searchString{
             }
         }
         
-        _desPath = indexPath;
-        
+        _desPath=indexPath;
         
     }
     else if(tableView==self.rightTable)
     {
+        
+        
         int newRow = [indexPath row];
         int oldRow = (_lastpath != nil) ? [_lastpath row] : newRow-1;
         if (newRow != oldRow) {
@@ -469,8 +470,13 @@ shouldReloadTableForSearchString:(NSString *)searchString{
         {
     
             NSString * mainId = [dic objectForKey:@"mainId"];
-            if (![mainId isEqualToString:@""]) {
+            if (mainId!=nil) {
                 NSDictionary * name = [NSDictionary dictionaryWithObjectsAndKeys:mainId,@"string",nil];
+                SingleClass * single  = [SingleClass singleClass];
+                [single.singleDic addEntriesFromDictionary:name];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"qzy" object:nil userInfo:single.singleDic];
+            }else{
+                NSDictionary * name = [NSDictionary dictionaryWithObjectsAndKeys:[dic objectForKey:@"id"],@"string",nil];
                 SingleClass * single  = [SingleClass singleClass];
                 [single.singleDic addEntriesFromDictionary:name];
                 [[NSNotificationCenter defaultCenter] postNotificationName:@"qzy" object:nil userInfo:single.singleDic];
@@ -504,6 +510,7 @@ shouldReloadTableForSearchString:(NSString *)searchString{
     
         NSString * cityName = [string stringByReplacingOccurrencesOfString:@"-" withString:@""];
         [self.delegate destination:cityName];
+        _countryName = cityName;
         [self dismissViewControllerAnimated:YES completion:nil];
     }
     

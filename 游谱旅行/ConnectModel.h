@@ -8,6 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
+//获取服务器时间
+extern NSString *const kServerTimeUrl;
+//域名前缀
+extern NSString *const kPrefixUrl;
 //登录接口
 extern NSString *const kLoginUrl;
 //注册接口
@@ -70,6 +74,10 @@ extern NSString *const kReSetPassUrl;
 extern NSString *const kFeedBackUrl;
 //定制上的数字
 extern NSString *const kNumberUrl;
+//推送列表
+extern NSString *const kPushUrl;
+//新爆款
+extern NSString *const kNewMaxUrl;
 
 //网络GET请求方式
 extern NSString *const kConnectGetType;

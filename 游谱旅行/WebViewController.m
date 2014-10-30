@@ -34,20 +34,32 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
+    [self qzy];
+    [self webview];
+    
+}
+
+-(void)qzy{
     self.title = @"信息详情";
     self.navigationController.navigationBar.translucent = NO;
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
     self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
     
-    [self webview];
-    
+    UIButton *shareBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [shareBtn setImage:[UIImage imageNamed:@"1"] forState:UIControlStateNormal];
+    [shareBtn addTarget:self action:@selector(shareTopic) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:shareBtn];
+    self.navigationItem.rightBarButtonItem.tintColor = [UIColor whiteColor];
 }
 
 -(void)backActon{
@@ -57,13 +69,122 @@
     
 }
 
+-(void)shareTopic{
+
+    id<ISSCAttachment> topicImage = [ShareSDK imageWithUrl:_topicImage];
+    
+    id<ISSContent> publishContent = [ShareSDK content:@"" defaultContent:@"默认分享内容" image:nil title:_topicTitle url:_string description:nil mediaType:SSPublishContentMediaTypeNews];
+    id<ISSAuthOptions> authOptions = [ShareSDK authOptionsWithAutoAuth:YES allowCallback:YES authViewStyle:SSAuthViewStyleFullScreenPopup viewDelegate:nil authManagerViewDelegate:nil];
+    
+    //自定义QQ空间分享
+    id<ISSShareActionSheetItem> qqZone = [ShareSDK shareActionSheetItemWithTitle:[ShareSDK getClientNameWithType:ShareTypeQQSpace]  icon:[ShareSDK getClientIconWithType:ShareTypeQQSpace] clickHandler:^{
+        
+       
+        
+        [ShareSDK shareContent:[ShareSDK content:@"" defaultContent:@"" image:topicImage title:_topicTitle url:_string description:@"" mediaType:SSPublishContentMediaTypeNews] type:ShareTypeQQSpace authOptions:authOptions shareOptions:nil statusBarTips:NO result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end){
+            
+            if (state == SSPublishContentStateSuccess) {
+                NSLog(@"哎呀,成功啦.");
+            }else if (state == SSPublishContentStateFail){
+                NSLog(@"笨死啦,分享失败");
+            }
+            
+        }];
+        
+    }];
+    
+    //自定义新浪微博分享
+    id<ISSShareActionSheetItem> sina = [ShareSDK shareActionSheetItemWithTitle:[ShareSDK getClientNameWithType:ShareTypeSinaWeibo] icon:[ShareSDK getClientIconWithType:ShareTypeSinaWeibo] clickHandler:^{
+        
+        
+        NSString * string = [NSString stringWithFormat:@"%@,%@",_topicTitle,_string];
+        
+        [ShareSDK shareContent:[ShareSDK content:string defaultContent:@"游谱特惠" image:nil title:_topicTitle url:_string description:nil mediaType:SSPublishContentMediaTypeNews] type:ShareTypeSinaWeibo authOptions:authOptions shareOptions:nil statusBarTips:NO result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end) {
+            
+            if (state == SSPublishContentStateSuccess) {
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享成功" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
+                
+            }else if (state == SSPublishContentStateFail){
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享失败" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
+            }
+            
+        }];
+        
+    }];
+    
+    //QQ好友分享
+    id<ISSShareActionSheetItem> QQ = [ShareSDK shareActionSheetItemWithTitle:[ShareSDK getClientNameWithType:ShareTypeQQ] icon:[ShareSDK getClientIconWithType:ShareTypeQQ] clickHandler:^{
+        
+        [ShareSDK shareContent:[ShareSDK content:nil defaultContent:@"" image:topicImage title:_topicTitle url:_string description:@"" mediaType:SSPublishContentMediaTypeNews] type:ShareTypeQQ authOptions:authOptions statusBarTips:NO result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end) {
+            
+            if (state == SSPublishContentStateSuccess) {
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享成功" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
+            }else if (state == SSPublishContentStateFail){
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享失败" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
+            }
+        }];
+    }];
+    
+    //微信朋友圈分享
+    id<ISSShareActionSheetItem> weixin = [ShareSDK shareActionSheetItemWithTitle:[ShareSDK getClientNameWithType:ShareTypeWeixiTimeline] icon:[ShareSDK getClientIconWithType:ShareTypeWeixiTimeline] clickHandler:^{
+        
+        
+        [ShareSDK shareContent:[ShareSDK content:nil defaultContent:@"" image:topicImage title:_topicTitle url:_string description:@"" mediaType:SSPublishContentMediaTypeApp] type:ShareTypeWeixiTimeline authOptions:authOptions statusBarTips:NO result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end) {
+            
+            if (state == SSPublishContentStateSuccess) {
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享成功" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
+            }else if (state == SSPublishContentStateFail){
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享失败" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
+            }
+        }];
+    }];
+    
+    //微信好友分享
+    id<ISSShareActionSheetItem> WXfriend = [ShareSDK shareActionSheetItemWithTitle:[ShareSDK getClientNameWithType:ShareTypeWeixiSession] icon:[ShareSDK getClientIconWithType:ShareTypeWeixiSession] clickHandler:^{
+        
+        [ShareSDK shareContent:[ShareSDK content:nil defaultContent:nil image:topicImage title:_topicTitle url:_string description:@"" mediaType:SSPublishContentMediaTypeNews] type:ShareTypeWeixiSession authOptions:authOptions statusBarTips:NO result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end) {
+            
+            if (state == SSPublishContentStateSuccess) {
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享成功" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
+            }else if (state == SSPublishContentStateFail){
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享失败" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
+            }
+        }];
+    }];
+    //创建自定义分享列表
+    NSArray * array = [ShareSDK customShareListWithType:WXfriend,weixin,sina,QQ,qqZone, nil];
+    
+    [ShareSDK showShareActionSheet:nil shareList:array content:publishContent statusBarTips:NO authOptions:authOptions shareOptions:[ShareSDK  defaultShareOptionsWithTitle:nil oneKeyShareList:[NSArray defaultOneKeyShareList] cameraButtonHidden:NO mentionButtonHidden:NO topicButtonHidden:NO qqButtonHidden:NO wxSessionButtonHidden:NO wxTimelineButtonHidden:NO showKeyboardOnAppear:NO shareViewDelegate:nil friendsViewDelegate:nil picViewerViewDelegate:nil] result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end){
+        
+        if (state == SSPublishContentStateSuccess) {
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享成功" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
+        }else if (state == SSPublishContentStateFail){
+            
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享失败" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
+            
+        }
+    }];
+
+    
+}
+
 //添加菊花
 -(void)addIndicator
 {
     if (!_indicator.isAnimating) {
         //添加菊花
         _indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        [_indicator setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.3]];
+        [_indicator setBackgroundColor:[UIColor colorWithWhite:1 alpha:0.5]];
         [_indicator setColor:[UIColor colorWithRed:224/255.0  green:89/255.0 blue:60/255.0 alpha:1]];
         [_indicator setFrame:CGRectMake(0,0, self.view.frame.size.width, self.view.frame.size.height)];
         [_indicator startAnimating];

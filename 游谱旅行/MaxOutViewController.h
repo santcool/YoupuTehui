@@ -12,14 +12,16 @@
 @interface MaxOutViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,MJRefreshBaseViewDelegate>
 {
     NSInteger _i;
-    MJRefreshFooterView  * _footer;
-    UILabel *imageLable;
+    UIView *imageLable;
+    UIPageControl * _pageControl;
+    UIView * _aView;
 }
 
 @property (nonatomic, strong) NSMutableArray * maxOutArr;
+@property (nonatomic, strong) NSMutableArray * everyArr;
 @property (nonatomic, strong) NSMutableDictionary * maxOutDic;
 @property (nonatomic, strong) UITableView * maxOutTable;
-
-
+@property (nonatomic,strong) UIScrollView * scroll;
+@property (nonatomic, strong) NSMutableDictionary * dictionary;
 
 @end

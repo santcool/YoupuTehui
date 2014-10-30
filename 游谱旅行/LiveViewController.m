@@ -12,7 +12,7 @@ static LiveViewController * live = nil;
 
 @interface LiveViewController ()
 {
-    UIActivityIndicatorView * _indicator;//菊花
+    MBProgressHUD * _progressHUD;
 }
 
 @property (strong,nonatomic)NSIndexPath *lastpath;
@@ -44,17 +44,11 @@ static LiveViewController * live = nil;
     return self;
 }
 
--(void)viewWillAppear:(BOOL)animated{
-    
-    
-    [self qzy];
-    
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    [self qzy];
     
     [self qzyTableView];
     
@@ -68,12 +62,15 @@ static LiveViewController * live = nil;
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
     self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
     
 }
 
@@ -92,33 +89,25 @@ static LiveViewController * live = nil;
     [tableView setTableFooterView:view];
 }
 
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
-}
-
 //添加菊花
 -(void)addIndicator
 {
-    if (!_indicator.isAnimating) {
-        //添加菊花
-        _indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        [_indicator setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.8]];
-        [_indicator setColor:[UIColor colorWithRed:224/255.0  green:89/255.0 blue:60/255.0 alpha:1]];
-        [_indicator setFrame:CGRectMake(0,0, self.view.frame.size.width, self.view.frame.size.height)];
-        [_indicator startAnimating];
-        [self.view addSubview:_indicator];
+    _progressHUD = [[MBProgressHUD alloc] initWithView:self.view];
+    [self.view addSubview:_progressHUD];
+    [self.view bringSubviewToFront:_progressHUD];
+    [_progressHUD setMode:MBProgressHUDModeIndeterminate];
+    [_progressHUD setLabelText:@"加载中..."];
+    [_progressHUD showWhileExecuting:@selector(myProgressTask) onTarget:self withObject:nil animated:YES];
+}
+-(void) myProgressTask{
+    float progress = 0.0f;
+    while (progress < 1.0f) {
+        progress -=0.01f;
+        _progressHUD.progress = progress;
+        usleep(50000);
     }
 }
+
 
 -(void)change{
     
@@ -133,21 +122,21 @@ static LiveViewController * live = nil;
     NSString * type = @"nickName";
     NSString * value = @"";
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",memberId,timeString,type,value,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
     type = [NSString stringWithFormat:@"%@=%@%@",@"type",type,@"&"];
     value = [NSString stringWithFormat:@"%@=%@%@",@"value",value,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kReviseUrl,time,type,value];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kReviseUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,type,value];
     
     NSString * finallyUrl = [NSString stringWithFormat:@"%@%@",lastUrl,memberId];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",finallyUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         
@@ -169,13 +158,14 @@ static LiveViewController * live = nil;
     //加密规则
     NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
     NSString * QZY = [NSString stringWithFormat:@"%@%@",timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",kMainConnectUrl,time];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kMainConnectUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",url,time];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
     
@@ -186,8 +176,8 @@ static LiveViewController * live = nil;
         [_addressArray addObjectsFromArray:[dic objectForKey:@"data"]];
         
         [_addressTable reloadData];
-        [_indicator stopAnimating];
-        [_indicator removeFromSuperview];
+        [_progressHUD hide:YES];
+        [_progressHUD removeFromSuperViewOnHide];
     }];
     
 }
@@ -215,14 +205,23 @@ static LiveViewController * live = nil;
     if (cell == nil) {
         cell = [[ConditionTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIden];
     
-        NSDictionary * dic = [self.addressArray objectAtIndex:indexPath.row];
-        [cell.textLabel setText:[dic objectForKey:@"cityName"]];
-        [cell.textLabel setFont:[UIFont systemFontOfSize:16]];
-        if ([[dic objectForKey:@"cityName"]isEqualToString:_liveHere]) {
-            _lastpath = indexPath;
+    }
+    NSDictionary * dic = [self.addressArray objectAtIndex:indexPath.row];
+    [cell.textLabel setText:[dic objectForKey:@"cityName"]];
+    [cell.textLabel setFont:[UIFont systemFontOfSize:16]];
+    if (_lastpath != nil) {
+        if (_lastpath.row == indexPath.row) {
             [cell.image setImage:[UIImage imageNamed:@"钩钩"]];
+            cell.image.hidden = NO;
         }
-        
+        else {
+            
+            [cell.image setHidden:YES];
+        }
+    }
+    if ([[dic objectForKey:@"cityName"]isEqualToString:_liveHere]) {
+        _lastpath = indexPath;
+        [cell.image setImage:[UIImage imageNamed:@"钩钩"]];
     }
     return cell;
 
@@ -240,21 +239,21 @@ static LiveViewController * live = nil;
     NSString * type = @"cityId";
     NSString * value = [[_addressArray objectAtIndex:indexPath.row] objectForKey:@"id"];
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",memberId,timeString,type,value,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
     type = [NSString stringWithFormat:@"%@=%@%@",@"type",type,@"&"];
     value = [NSString stringWithFormat:@"%@=%@%@",@"value",value,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kReviseUrl,time,type,value];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kReviseUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,type,value];
     
     NSString * finallyUrl = [NSString stringWithFormat:@"%@%@",lastUrl,memberId];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",finallyUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         

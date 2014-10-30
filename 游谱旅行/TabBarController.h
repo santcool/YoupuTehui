@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 
-@interface TabBarController : UITabBarController<UITabBarControllerDelegate>
+@interface TabBarController : UITabBarController<UITabBarControllerDelegate,UIAlertViewDelegate>
 {
     //按钮图片的数组
     NSArray * _imageArray;
@@ -18,6 +18,9 @@
 @property (nonatomic, strong) UIView * tabBarView;//自定义的tabBar
 @property (nonatomic, assign) NSInteger i;
 @property (nonatomic, assign) NSInteger prevSelectedIndex;
+@property (nonatomic, assign) NSInteger isOrNo;
+@property (nonatomic, assign) NSInteger mainSelected;
+
 
 - (void)createTabbar;
 //创建tabBar上的按钮

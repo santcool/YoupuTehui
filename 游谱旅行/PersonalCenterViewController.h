@@ -7,16 +7,14 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "MJRefresh.h"
+#import "MBProgressHUD.h"
 
-@interface PersonalCenterViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,MJRefreshBaseViewDelegate,UIScrollViewDelegate>
+@interface PersonalCenterViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,MJRefreshBaseViewDelegate,UIScrollViewDelegate,MBProgressHUDDelegate>
 {
     UIImageView * image;
     NSInteger _i;
-    
-    MJRefreshHeaderView *_header;
-    MJRefreshFooterView *_footer;
     UIPageControl * _pageControl;
+    
 }
 
 @property (nonatomic, strong) UIImageView * downView;
@@ -28,9 +26,11 @@
 @property (nonatomic, strong) UIScrollView * scroll;
 @property (nonatomic, strong) NSMutableDictionary * makeThing;
 @property (nonatomic, strong) NSString * userIcons;
+@property (nonatomic, strong) NSString * userName;
 @property (nonatomic, strong) NSMutableArray * numberArray;
 @property (nonatomic, strong) UITableView * makeListTable;
 @property (nonatomic, strong) UINavigationController * detailNavigation;
+@property (nonatomic, strong) NSMutableArray * allArray;
 
 @end
 

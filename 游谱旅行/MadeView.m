@@ -16,7 +16,7 @@
     if (self) {
         // Initialization code
         
-        [self setBackgroundColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:70/255.0 alpha:1]];
+        [self setBackgroundColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
         [self setFrame:CGRectMake(0, 0, 320, 64)];
         
         self.lable = [[UILabel alloc] initWithFrame:CGRectMake(120, 30, 80, 30)];

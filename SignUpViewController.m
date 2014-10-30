@@ -43,7 +43,8 @@
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"登录" style:UIBarButtonItemStyleDone target:self action:@selector(returnToLast)];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     self.navigationItem.rightBarButtonItem.tintColor = [UIColor whiteColor];
     
@@ -66,29 +67,29 @@
     [upLable setFont:[UIFont systemFontOfSize:12]];
     [self.view addSubview:upLable];
     
-    UILabel * zhanghao = [[UILabel alloc] initWithFrame:CGRectMake(30, self.view.frame.size.height-542, 100, 30)];
+    UILabel * zhanghao = [[UILabel alloc] initWithFrame:CGRectMake(30, 30, 100, 30)];
     [zhanghao setText:@"账号"];
     [zhanghao setFont:[UIFont systemFontOfSize:17]];
     [zhanghao setTextColor:[UIColor blackColor]];
     [self.view addSubview:zhanghao];
     
-    self.zhText = [[CustomTextField alloc] initWithFrame:CGRectMake(20, self.view.frame.size.height-512, self.view.frame.size.width-40, 40)];
+    self.zhText = [[CustomTextField alloc] initWithFrame:CGRectMake(20, 60, self.view.frame.size.width-40, 40)];
     [_zhText setPlaceholder:@"填写邮箱"];
     _zhText.layer.borderWidth = 0.5;
     _zhText.layer.borderColor =[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:0.5].CGColor;
     _zhText.layer.cornerRadius = 5;
     _zhText.layer.masksToBounds = YES;
-    _zhText.delegate = self;
+//    _zhText.delegate = self;
     [_zhText setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.03]];
     [self.view addSubview:_zhText];
     
-    UILabel * mima = [[UILabel alloc] initWithFrame:CGRectMake(30, self.view.frame.size.height-462, 50, 30)];
+    UILabel * mima = [[UILabel alloc] initWithFrame:CGRectMake(30, 110, 50, 30)];
     [mima setText:@"密码"];
     [mima setTextColor:[UIColor blackColor]];
     [mima setFont:[UIFont systemFontOfSize:17]];
     [self.view addSubview:mima];
     
-    self.yxText = [[CustomTextField alloc] initWithFrame:CGRectMake(20, self.view.frame.size.height-432, self.view.frame.size.width-40, 40)];
+    self.yxText = [[CustomTextField alloc] initWithFrame:CGRectMake(20, 140, self.view.frame.size.width-40, 40)];
     [_yxText setPlaceholder:@"6-14位,建议数字、字母、符号组合"];
     _yxText.layer.borderWidth = 0.5;
     _yxText.layer.borderColor =[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:0.5].CGColor;
@@ -99,7 +100,7 @@
     [_yxText setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.03]];
     [self.view addSubview:_yxText];
     
-    UIButton * login = [[UIButton alloc] initWithFrame:CGRectMake(20, self.view.frame.size.height-362, self.view.frame.size.width-40, 40)];
+    UIButton * login = [[UIButton alloc] initWithFrame:CGRectMake(20, 210, self.view.frame.size.width-40, 40)];
     [login setTitle:@"注册" forState:UIControlStateNormal];
     [login setBackgroundImage:[UIImage imageNamed:@"橙条长"] forState:UIControlStateNormal];
     [login setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -107,31 +108,16 @@
     [self.view addSubview:login];
 }
 
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
-}
-
-
 -(void)signUp{
     
     if ([_zhText.text isEqualToString:@""] && [_yxText.text isEqualToString:@""]) {
+        UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"请输入邮箱和密码" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+        [sheet showInView:self.view];
         
-        UIAlertView * alter = [[UIAlertView alloc] initWithTitle:@"提示" message:@"请输入邮箱和密码" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-        [alter show];
     }else if ([_zhText.text isEqualToString:@""] || [_yxText.text isEqualToString:@""]){
         
-        UIAlertView * alter = [[UIAlertView alloc] initWithTitle:@"提示" message:@"请输入邮箱或密码" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-        [alter show];
+        UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"请输入邮箱或密码" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+        [sheet showInView:self.view];
         
     }else{
         
@@ -144,25 +130,25 @@
         NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
         NSString * email = _zhText.text;
         NSString * QZY = [NSString stringWithFormat:@"%@%@%@",email,timeString,key];
-        NSString * qzy = [self md5:QZY];
+        NSString * qzy = [TeHuiModel md5:QZY];
         NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-        NSString * qaz = [self md5:qwe];
+        NSString * qaz = [TeHuiModel md5:qwe];
         
         //接口拼接
         NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
         email = [NSString stringWithFormat:@"%@=%@%@",@"email",email,@"&"];
-        NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@",kEmailExistUrl,time,email];
+        NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kEmailExistUrl];
+        NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@",url,time,email];
         
         NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
         NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-        NSLog(@"%@",finally);
         
     [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
         
     NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
     if ([[[dic objectForKey:@"code"] stringValue] isEqualToString:@"2"]) {
-        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"抱歉" message:@"邮箱已存在" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-        [alert show];
+        UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"邮箱已存在" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+        [sheet showInView:self.view];
         _zhText.text = @"";
         _yxText.text = @"";
         
@@ -183,35 +169,40 @@
         NSString * password = single.passWord;
         NSString * from = @"iosApp";
         NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",from,password,timeString,username,key];
-        NSString * qzy = [self md5:QZY];
+        NSString * qzy = [TeHuiModel md5:QZY];
         NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-        NSString * qaz = [self md5:qwe];
+        NSString * qaz = [TeHuiModel md5:qwe];
         
         //接口拼接
         NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
         username = [NSString stringWithFormat:@"%@=%@%@",@"username",username,@"&"];
         password = [NSString stringWithFormat:@"%@=%@%@",@"password",password,@"&"];
         from = [NSString stringWithFormat:@"%@=%@%@",@"from",from,@"&"];
-        NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@",kSignUpUrl,time,username,password,from];
+        NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kSignUpUrl];
+        NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@",url,time,username,password,from];
         
         NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
         NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-        NSLog(@"%@",finally);
         
         [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
             
             NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
             if ([[[dic objectForKey:@"code"]stringValue]isEqualToString:@"0"]) {
-                UIAlertView * alter = [[UIAlertView alloc] initWithTitle:@"提示" message:@"注册成功" delegate:self    cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-                [alter show];
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"注册成功" delegate:self cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
                 NSDictionary * yang = [dic objectForKey:@"data"];
                 NSString * member = [yang objectForKey:@"memberId"];
                 [[NSUserDefaults standardUserDefaults] setObject:member forKey:@"memberId"];
                 [[NSUserDefaults standardUserDefaults] synchronize];
+                
+                [[EaseMob sharedInstance].chatManager  registerNewAccount:member password:@"111111" error:nil];
+                [[EaseMob sharedInstance].chatManager loginWithUsername:member password:@"111111" error:nil];
             }
      
    
         }];
+        
+       
 
         }
     }];
@@ -219,17 +210,59 @@
 
 }
 
--(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+
+- (void)textFieldDidBeginEditing:(UITextField *)textField
+
+{
+    if (textField== _yxText) {
+        
+        [self animateTextField: textField up: YES];
+    }
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField
+
+{
+    
+    if (textField==_yxText) {
+        
+        [self animateTextField: textField up: NO];
+        
+    }
+    
+}
+
+- (void) animateTextField: (UITextField*) textField up: (BOOL) up
+{
+    
+    const int movementDistance = 80; // tweak as needed
+    const float movementDuration = 0.3f; // tweak as needed
+    int movement = (up ? -movementDistance : movementDistance);
+    
+    [UIView beginAnimations: @"anim" context: nil];
+    
+    [UIView setAnimationBeginsFromCurrentState: YES];
+    
+    [UIView setAnimationDuration: movementDuration];
+    
+    self.view.frame = CGRectOffset(self.view.frame, 0, movement);
+    
+    [UIView commitAnimations];
+    
+    
+}
+
+-(void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex{
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
     appDelegate.tab.selectedIndex = 0;
     [self dismissViewControllerAnimated:YES completion:nil];
     
 }
-
--(BOOL)textFieldShouldReturn:(UITextField *)textField{
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
     
-    [textField resignFirstResponder];
-    return YES;
+    [_zhText resignFirstResponder];
+    [_yxText resignFirstResponder];
+    
 }
 
 - (void)didReceiveMemoryWarning

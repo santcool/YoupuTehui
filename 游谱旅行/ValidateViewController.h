@@ -10,7 +10,7 @@
 
 @protocol MobileDelegate;
 
-@interface ValidateViewController : UIViewController<UIAlertViewDelegate>
+@interface ValidateViewController : UIViewController<UIActionSheetDelegate>
 
 @property (nonatomic, strong) UITextField * field;
 

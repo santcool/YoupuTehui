@@ -11,14 +11,20 @@
 @protocol toCityDelegate;
 
 @interface toCityViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,UISearchBarDelegate,UISearchDisplayDelegate>
+{
+    UISearchDisplayController * _displayController;
+}
 
 
 @property (nonatomic, strong) UITableView * destinationTable;
 @property (nonatomic,strong) NSMutableDictionary * dictionary;
+@property (nonatomic,strong) NSMutableArray * arr;
 @property (nonatomic,strong) UISearchBar * search;
 @property (nonatomic,strong) UITableView * rightTable;
 @property (nonatomic, strong) NSMutableArray * valueArray;
-@property (nonatomic, strong) NSString * toCityStr;
+@property (nonatomic, strong) NSString * titleStr;//判断首页button标题
+
+@property (nonatomic,strong) NSString * countryName;
 
 @property (nonatomic, weak) id<toCityDelegate> delegate;
 

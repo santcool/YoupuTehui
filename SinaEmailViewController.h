@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SinaEmailViewController : UIViewController
+@interface SinaEmailViewController : UIViewController<UITextFieldDelegate>
 {
     CustomTextField * zhText;
     CustomTextField * mmText;

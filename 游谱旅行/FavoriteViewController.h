@@ -17,6 +17,7 @@
 @property (nonatomic, strong) UITableView * table;
 @property (nonatomic, strong) NSMutableArray * favoriteArr;
 @property (nonatomic, strong) NSMutableArray * favoriteId;
+@property (nonatomic, strong) NSMutableArray * selectedArr;
 
 @property (nonatomic, weak) id<favoriteDelegate> delegate;
 

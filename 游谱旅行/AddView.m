@@ -16,16 +16,17 @@
     if (self) {
         // Initialization code
         
-        [self setBackgroundColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:70/255.0 alpha:1]];
-        [self setFrame:CGRectMake(0, 0, 320, 64)];
+        [self setBackgroundColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
+        [self setFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 64)];
         
-        self.lable = [[UILabel alloc] initWithFrame:CGRectMake(120, 30, 80, 30)];
+        self.lable = [[UILabel alloc] initWithFrame:CGRectMake(120, 27, 80, 30)];
         [_lable setText:@"添加定制"];
         [_lable setTextColor:[UIColor whiteColor]];
-        [_lable setFont:[UIFont systemFontOfSize:16]];
+        [_lable setTextAlignment:NSTextAlignmentCenter];
+        [_lable setFont:[UIFont systemFontOfSize:18]];
         [self addSubview:_lable];
         
-        self.aImage = [[TouchImage alloc] initWithFrame:CGRectMake(280, 30, 30, 30)];
+        self.aImage = [[TouchImage alloc] initWithFrame:CGRectMake(280, 27, 30, 30)];
         [_aImage setImage:[UIImage imageNamed:@"change"]];
         [self addSubview:_aImage];
         

@@ -43,12 +43,15 @@
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
     self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"保存" style:UIBarButtonItemStylePlain target:self action:@selector(saveAction)];
     self.navigationItem.rightBarButtonItem.tintColor = [UIColor whiteColor];
@@ -56,28 +59,15 @@
 
 -(void)backActon{
     
+    [_field resignFirstResponder];
     [self.navigationController popViewControllerAnimated:YES];
-}
-
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
 }
 
 -(void)saveAction{
     
     if ([_field.text isEqualToString:@""]) {
-        UIAlertView * alert =[[UIAlertView alloc]initWithTitle:@"提示" message:@"请输入验证码" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-        [alert show];
+        UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"请输入验证码" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+        [sheet showInView:self.view];
     }else{
     //获取当前时间戳
     NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
@@ -89,36 +79,36 @@
     NSString * mobile = _phoneMobile;
     NSString * code = _field.text;
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@",code,mobile,timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     mobile = [NSString stringWithFormat:@"%@=%@%@",@"mobile",mobile,@"&"];
     code = [NSString stringWithFormat:@"%@=%@%@",@"code",code,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kValidateUrl,time,mobile,code];
+        NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kValidateUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,mobile,code];
     
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
         
         NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
             
         if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"4"]) {
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"手机号已经存在" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
             
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"￼手机号已经存在" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [alert show];
         }else if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"3"]){
-            
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"验证码错误" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [alert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"验证码错误" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
             
         }else if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"2"]){
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"系统错误" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [alert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"系统错误" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
+            
         }else{
             
             //获取当前时间戳
@@ -132,29 +122,27 @@
             NSString * type = @"mobile";
             NSString * value = _phoneMobile;
             NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",memberId,timeString,type,value,key];
-            NSString * qzy = [self md5:QZY];
+            NSString * qzy = [TeHuiModel md5:QZY];
             NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-            NSString * qaz = [self md5:qwe];
+            NSString * qaz = [TeHuiModel md5:qwe];
             
             //接口拼接
             NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
             memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
             type = [NSString stringWithFormat:@"%@=%@%@",@"type",type,@"&"];
             value = [NSString stringWithFormat:@"%@=%@%@",@"value",value,@"&"];
-            NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@",kReviseUrl,time,type,value,memberId];
+            NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kReviseUrl];
+            NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@",url,time,type,value,memberId];
             
             NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
             NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-            NSLog(@"%@",finally);
             
             [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
                 
                 NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
                 if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"0"]) {
-                    
-                    UIAlertView * alert =[[UIAlertView alloc]initWithTitle:@"提示" message:@"保存成功" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-                    [alert show];
-                    
+                    UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"保存成功" delegate:self cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                    [sheet showInView:self.view];
                 }
                 
             }];
@@ -165,7 +153,7 @@
     }
 }
 
--(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+-(void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex{
     
     NSDictionary * dic = [NSDictionary dictionaryWithObject:_phoneMobile forKey:@"dianhua"];
     [[NSNotificationCenter defaultCenter]postNotificationName:@"qwer" object:nil userInfo:dic];
@@ -189,6 +177,10 @@
     
 }
 
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+    
+    [_field resignFirstResponder];
+}
 
 - (void)didReceiveMemoryWarning
 {

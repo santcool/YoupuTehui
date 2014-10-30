@@ -9,13 +9,14 @@
 #import <UIKit/UIKit.h>
 #import "LoginViewController.h"
 #import "MJRefresh.h"
+#import "MBProgressHUD.h"
+#import "LXActionSheet.h"
 
-@interface MadeOfMeViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,MJRefreshBaseViewDelegate>
+@interface MadeOfMeViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,MJRefreshBaseViewDelegate,UIAlertViewDelegate,UIActionSheetDelegate,MBProgressHUDDelegate,LXActionSheetDelegate>
 {
     NSInteger _i;
-    MJRefreshHeaderView *_header;
-    MJRefreshFooterView *_footer;
     NSInteger _page;
+    NSInteger _detailNumber;
 }
 
 //上方button数据源

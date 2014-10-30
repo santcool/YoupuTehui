@@ -16,12 +16,15 @@
     UIButton * finishButton ;
     UIDatePicker * _datePicker;
     NSInteger _i;
+    NSInteger _j;
 }
 
 @property (nonatomic,strong) NSMutableDictionary * timeDic;
 @property (nonatomic,strong) UITableView * timeTable;
 @property (nonatomic,strong) UITextField * field;
 @property (nonatomic,strong) UITextField * fields;
+@property (nonatomic,strong) NSString * leftTime;
+@property (nonatomic,strong) NSString * rightTime;
 
 @property (nonatomic, assign) BOOL exit;
 

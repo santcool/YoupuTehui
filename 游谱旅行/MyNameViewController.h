@@ -13,7 +13,7 @@
 @interface MyNameViewController : UIViewController<UITextFieldDelegate>
 
 @property (nonatomic, strong) NSString * name;
-@property (nonatomic, strong) UITextField * field;
+@property (nonatomic, strong) CustomTextField * field;
 @property (nonatomic, weak) id<myDelegate> delegate;
 
 @property (nonatomic, strong) NSString * myName;

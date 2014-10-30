@@ -8,67 +8,75 @@
 
 #import "ConnectModel.h"
 
-NSString *const kLoginUrl = @"http://tehui.youpu.cn/api/login/?paramType=get&";
+NSString *const kServerTimeUrl = @"http://192.168.31.130:9091/system/getTime";
 
-NSString *const kSignUpUrl = @"http://tehui.youpu.cn/api/regedit/?paramType=get&";
+NSString *const kPrefixUrl = @"http://tehui.youpu.cn/api/";
 
-NSString *const kMainConnectUrl = @"http://tehui.youpu.cn/api/fromCityList/?paramType=get&";
+NSString *const kLoginUrl = @"login/?paramType=get&";
 
-NSString *const kFilterUrl = @"http://tehui.youpu.cn/api/filterCaseList/?paramType=get&";
+NSString *const kSignUpUrl = @"regedit/?paramType=get&";
 
-NSString *const kScrollUrl = @"http://tehui.youpu.cn/api/indexSlideshow/?paramType=get&";
+NSString *const kMainConnectUrl = @"fromCityList/?paramType=get&";
 
-NSString *const kLineUrl = @"http://tehui.youpu.cn/api/indexLineList/?paramType=get&";
+NSString *const kFilterUrl = @"filterCaseList/?paramType=get&";
 
-NSString *const kDetailUrl = @"http://tehui.youpu.cn/api/lineDetail/?paramType=get&";
+NSString *const kScrollUrl = @"indexSlideshow/?paramType=get&";
 
-NSString *const kRecommendUrl = @"http://tehui.youpu.cn/api/detailRecommend/?paramType=get&";
+NSString *const kLineUrl = @"indexLineList/?paramType=get&";
+    
+NSString *const kDetailUrl = @"lineDetail/?paramType=get&";
 
-NSString *const kCustomUrl = @"http://tehui.youpu.cn/api/myOrderList/?paramType=get&";
+NSString *const kRecommendUrl = @"detailRecommend/?paramType=get&";
 
-NSString *const kMadeDetailUrl = @"http://tehui.youpu.cn/api/orderOneValue/?paramType=get&";
+NSString *const kCustomUrl = @"myOrderList/?paramType=get&";
 
-NSString *const kFilterCaseListUrl = @"http://tehui.youpu.cn/api/orderFilterCaseList/?paramType=get&";
+NSString *const kMadeDetailUrl = @"orderOneValue/?paramType=get&";
 
-NSString *const kSaveUrl = @"http://tehui.youpu.cn/api/saveOrder/?paramType=get&";
+NSString *const kFilterCaseListUrl = @"orderFilterCaseList/?paramType=get&";
 
-NSString *const kDeleteUrl = @"http://tehui.youpu.cn/api/deleteOrder/?paramType=get&";
+NSString *const kSaveUrl = @"saveOrder/?paramType=get&";
 
-NSString *const kShowUrl = @"http://tehui.youpu.cn/api/orderLineList/?paramType=get&";
+NSString *const kDeleteUrl = @"deleteOrder/?paramType=get&";
 
-NSString *const kMaxOutUrl = @"http://tehui.youpu.cn/api/baokuanDetail/?paramType=get&";
+NSString *const kShowUrl = @"orderLineList/?paramType=get&";
 
-NSString *const kMaxListUrl = @"http://tehui.youpu.cn/api/baokuanList/?paramType=get&";
+NSString *const kMaxOutUrl = @"baokuanDetail/?paramType=get&";
 
-NSString *const kEmailExistUrl = @"http:tehui.youpu.cn/api/regeditCheckEmail/?paramType=get&";
+NSString *const kMaxListUrl = @"baokuanList/?paramType=get&";
 
-NSString *const kBindQQAndSinaUrl = @"http:tehui.youpu.cn/api/bindUnionToUser/?paramType=get&";
+NSString *const kEmailExistUrl = @"regeditCheckEmail/?paramType=get&";
 
-NSString *const kQQLoginUrl = @"http://tehui.youpu.cn/api/unionLogin/?paramType=get&";
+NSString *const kBindQQAndSinaUrl = @"bindUnionToUser/?paramType=get&";
 
-NSString *const kForgetUrl = @"http://tehui.youpu.cn/api/checkMobileAndSendCode/?paramType=get&";
+NSString *const kQQLoginUrl = @"unionLogin/?paramType=get&";
 
-NSString *const kValidateUrl = @"http://tehui.youpu.cn/api/checkMobileCode/?paramType=get&";
+NSString *const kForgetUrl = @"checkMobileAndSendCode/?paramType=get&";
 
-NSString *const kIconUrl = @"http://tehui.youpu.cn/api/setUserIcon/?paramType=get&";
+NSString *const kValidateUrl = @"checkMobileCode/?paramType=get&";
 
-NSString *const kUserInfoUrl = @"http://tehui.youpu.cn/api/userInfo/?paramType=get&";
+NSString *const kIconUrl = @"setUserIcon/?paramType=get&";
 
-NSString *const kReviseUrl = @"http://tehui.youpu.cn/api/changeUserInfo/?paramType=get&";
+NSString *const kUserInfoUrl = @"userInfo/?paramType=get&";
 
-NSString *const kCollectUrl = @"http://tehui.youpu.cn/api/addFavorite/?paramType=get&";
+NSString *const kReviseUrl = @"changeUserInfo/?paramType=get&";
 
-NSString *const kCollectListUrl = @"http://tehui.youpu.cn/api/favoriteList/?paramType=get&";
+NSString *const kCollectUrl = @"addFavorite/?paramType=get&";
 
-NSString *const kDeleteCollectUrl = @"http://tehui.youpu.cn/api/removeFavorite/?paramType=get&";
+NSString *const kCollectListUrl = @"favoriteList/?paramType=get&";
 
-NSString *const kForgetPassEmail = @"http://tehui.youpu.cn/api/forgetPassEmail/?paramType=get&";
+NSString *const kDeleteCollectUrl = @"removeFavorite/?paramType=get&";
 
-NSString *const kReSetPassUrl = @"http://tehui.youpu.cn/api/reSetPass/?paramType=get&";
+NSString *const kForgetPassEmail = @"forgetPassEmail/?paramType=get&";
 
-NSString *const kFeedBackUrl = @"http://tehui.youpu.cn/api/feedBack/?paramType=get&";
+NSString *const kReSetPassUrl = @"reSetPass/?paramType=get&";
 
-NSString *const kNumberUrl = @"http://tehui.youpu.cn/api/customizeCount/?paramType=get&";
+NSString *const kFeedBackUrl = @"feedBack/?paramType=get&";
+
+NSString *const kNumberUrl = @"customizeCount/?paramType=get&";
+
+NSString *const kPushUrl = @"customizeUpdateData/?paramType=get&";
+
+NSString *const kNewMaxUrl = @"http://test.api.youpu.cn/discounttrip/getBaokuanNew/?paramType=get&";
 
 
 //网络请求方式
@@ -169,7 +177,7 @@ NSString *const kConnectPostType = @"POST";
         
         urlstr = [NSString stringWithFormat:@"%@",urlstr];
         bodyData = [str dataUsingEncoding:NSUTF8StringEncoding];
-        NSLog(@"AMZ_CONNECT_URL_STRING = %@",urlstr);
+       
     }
     
     

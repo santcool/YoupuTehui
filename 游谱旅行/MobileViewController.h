@@ -8,11 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
-@interface MobileViewController : UIViewController<UITextFieldDelegate,UIAlertViewDelegate>
+@interface MobileViewController : UIViewController<UITextFieldDelegate,UIActionSheetDelegate>
 
 @property (nonatomic, strong) NSString * phoneNumber;
 @property (nonatomic, strong) NSString * nowNumber;
-@property (nonatomic, strong) UITextField * field;
+@property (nonatomic, strong) CustomTextField * field;
 
 
 @end

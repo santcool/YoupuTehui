@@ -10,8 +10,12 @@
 
 @interface AddViewController ()
 {
+    MBProgressHUD * _progressHUD;
     UILabel * lable;
     NSInteger _i;
+    UIView * _view;
+    AddView * add;
+    UIActionSheet * action;
 }
 @property (nonatomic, strong) UINavigationController * fromNavigationController;
 @property (nonatomic, strong) UINavigationController * toCityNavigationController;
@@ -31,7 +35,7 @@
     if (self) {
         // Custom initialization
 
-        self.upArray = [NSMutableArray arrayWithObjects:@"出发城市",@"目的地",@"旅行时间",@"旅行天数",@"我的预算", nil];
+        self.upArray = [NSMutableArray arrayWithObjects:@"出发城市",@"目的地",@"出发时间",@"旅行天数",@"我的预算", nil];
         self.downArray = [NSArray arrayWithObjects:@"第几次去",@"和谁一起",@"旅行偏好", nil];
 
         self.numberOfMade = [[NSMutableDictionary alloc]init];
@@ -46,34 +50,95 @@
 
 -(void)viewWillAppear:(BOOL)animated{
     
+    [self createTableView];
+    
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"] == nil) {
         
+        action = [[UIActionSheet alloc]initWithTitle:@"你的定制尚未登录,是否要填写你的定制信息?" delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:nil otherButtonTitles:@"确定", nil];
+        [action setActionSheetStyle:UIActionSheetStyleBlackOpaque];
+        [action showInView:self.view];
+    
+    }else{
+        
+        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        if(appDelegate.tab.selectedIndex !=2){
+            _i=0;
+            _cityName = [[NSUserDefaults standardUserDefaults]objectForKey:@"cityName"];
+            _destinationStr = @"不限";
+            _priceStr = @"不限";
+            _travelStr = @"不限";
+            _specialStr = nil;
+            _mameStr = @"不限";
+            _togetherStr = @"不限";
+            _preferenceStr = @"不限";
+            _cityId = [[NSUserDefaults standardUserDefaults]objectForKey:@"fromCityId"];
+            _destinationId = @"0";
+            _left = nil;
+            _right = nil;
+            _travelId = @"0";
+            _priceId = @"0";
+            _mameId = @"0";
+            _togetherId = @"0";
+            _preferenceId = @"0";
+        }
+     
+        [self numberMade];
+        }
+    
+}
+
+-(void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex{
+    
+    if (actionSheet==action) {
+        
+        if (buttonIndex==1) {
+            AppDelegate * appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+            appDelegate.tab.selectedIndex = appDelegate.tab.prevSelectedIndex;
+            [self dismissViewControllerAnimated:YES completion:nil];
+        }else{
+            AppDelegate * app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+            app.tab.prevSelectedIndex = 2;
+            if (app.tab.isOrNo==1) {
+                app.tab.isOrNo=1;
+            }if (app.tab.isOrNo==3) {
+                
+                app.tab.isOrNo = 3;
+            }
+            
+            
+            LoginViewController * login = [[LoginViewController alloc]init];
+            UINavigationController * na = [[UINavigationController alloc]initWithRootViewController:login];
+            [self presentViewController:na animated:NO completion:nil];
+        }
     }
     
-    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    if(appDelegate.tab.selectedIndex !=2){
-        _i=0;
-        _cityName = [[NSUserDefaults standardUserDefaults]objectForKey:@"cityName"];
-        _destinationStr = @"不限";
-        _priceStr = @"不限";
-        _travelStr = @"不限";
-        _specialStr = nil;
-        _mameStr = @"不限";
-        _togetherStr = @"不限";
-        _preferenceStr = @"不限";
-    }
- 
-    [self numberMade];
-    [self addAndAdd];
-    [self createTableView];
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view
+    [self addAndAdd];
  
 
+}
+//添加菊花
+-(void)addIndicator
+{
+    _progressHUD = [[MBProgressHUD alloc] initWithView:self.view];
+    [self.view addSubview:_progressHUD];
+    [self.view bringSubviewToFront:_progressHUD];
+    [_progressHUD setMode:MBProgressHUDModeIndeterminate];
+    [_progressHUD setLabelText:@"加载中..."];
+    [_progressHUD showWhileExecuting:@selector(myProgressTask) onTarget:self withObject:nil animated:YES];
+}
+-(void) myProgressTask{
+    float progress = 0.0f;
+    while (progress < 1.0f) {
+        progress -=0.01f;
+        _progressHUD.progress = progress;
+        usleep(50000);
+    }
 }
 
 -(void)addAndAdd{
@@ -81,7 +146,12 @@
     [self.navigationController.navigationBar setHidden:YES];
     [self.view setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.05]];
     
-    AddView * add = [[AddView alloc] init];
+    add = [[AddView alloc] init];
+    if ([_qzyAll integerValue]>=10) {
+        [add.number setFrame:CGRectMake(6, 10, 15, 15)];
+        [add.number setFont:[UIFont systemFontOfSize:12]];
+        [add.number setTextAlignment:NSTextAlignmentCenter];
+    }
     [add.number setText:self.qzyAll];
     [add.aImage addTarget:self action:@selector(goToPerson)];
     [self.view addSubview:add];
@@ -99,17 +169,17 @@
     NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
     NSString *memberId = [[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@",memberId,timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     NSString * member = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@",kNumberUrl,time,member];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kNumberUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@",url,time,member];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         
@@ -124,7 +194,7 @@
 }
 
 -(void)acceptOrderId:(NSNotification *)notifi{
-    
+
     if ([[notifi userInfo]objectForKey:@"order"] !=nil) {
         _orderIds = [[notifi userInfo]objectForKey:@"order"];
         [self orderOneValue];
@@ -133,7 +203,7 @@
         _cityName = [[notifi userInfo]objectForKey:@"detailFrom"];
         _destinationStr = [[notifi userInfo]objectForKey:@"detailTo"];
         _cityId = [[notifi userInfo]objectForKey:@"detailFromCode"];
-        _destinationId =[NSString stringWithFormat:@"%@%@",@"AreaId-",[[notifi userInfo]objectForKey:@"detailToCode"]];
+        _destinationId =[[notifi userInfo]objectForKey:@"detailToCode"];
         
     }
 
@@ -144,8 +214,7 @@
 #pragma mark ------------定制详情
 -(void)orderOneValue{
     
-    [_upTableView removeFromSuperview];
-    [self createTableView];
+    [self addIndicator];
     //获取当前时间戳
     NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
     NSTimeInterval a=[dat timeIntervalSince1970];
@@ -156,31 +225,32 @@
     NSString * memberId = [[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
     NSString * orderId = _orderIds;
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@",memberId,orderId,timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     NSString * member = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
     orderId = [NSString stringWithFormat:@"%@=%@%@",@"orderId",orderId,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kMadeDetailUrl,time,member,orderId];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kMadeDetailUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,member,orderId];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         
         NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
      
         NSDictionary * dictionary  =[dic objectForKey:@"data"];
-        
          _i=2;
         _cityName = [dictionary objectForKey:@"fromCityName"];
         _destinationStr = [dictionary objectForKey:@"toCityName"];
         _priceStr = [dictionary objectForKey:@"budgetName"];
         _travelStr = [dictionary objectForKey:@"daysName"];
         _specialStr =[dictionary objectForKey:@"travelDateStr"];
+        _left =[dictionary objectForKey:@"travelDate"];
+        _right = [dictionary objectForKey:@"travelDateEnd"];
         _mameStr = [dictionary objectForKey:@"timesName"];
         _togetherStr = [dictionary objectForKey:@"togetherName"];
         if ([[dictionary objectForKey:@"travelTypeName"] isEqualToString:@""]) {
@@ -190,13 +260,14 @@
         }
         
         _cityId = [dictionary objectForKey:@"fromCityId"];
-        _destinationId =[NSString stringWithFormat:@"%@%@%@",[dictionary objectForKey:@"toCityType"],@"_",[dictionary objectForKey:@"toCityCode"]];
+        _destinationId =[NSString stringWithFormat:@"%@%@%@",[dictionary objectForKey:@"toCityType"],@"-",[dictionary objectForKey:@"toCityCode"]];
         _priceId =[dictionary objectForKey:@"budget"];
         _travelId = [dictionary objectForKey:@"days"];
         _mameId = [dictionary objectForKey:@"times"];
         _togetherId = [dictionary objectForKey:@"together"];
-        _timeId = [dictionary objectForKey:@"travelDate"];
-        _finishId = [dictionary objectForKey:@"travelDateEnd"];
+        
+       _left = [dictionary objectForKey:@"travelDate"];
+       _right = [dictionary objectForKey:@"travelDateEnd"];
         
         NSArray * array = [dictionary objectForKey:@"travelType"];
         for (int i = 0; i< [array count]; i++) {
@@ -211,9 +282,9 @@
                 }
             }
         }
-        
-        
         [_upTableView reloadData];
+        [_progressHUD hide:YES];
+        [_progressHUD removeFromSuperViewOnHide];
     }];
 }
 
@@ -233,8 +304,6 @@
 -(void)fromName:(NSString *)fromName{
     self.cityName = fromName;
     [_upTableView reloadData];
-
-    
 }
 -(void)severalName:(NSString *)str
 {
@@ -291,9 +360,9 @@
 }
 -(void)time:(NSString *)startTime arrive:(NSString *)finishTime exit:(BOOL)exit{
     
-    self.timeId = startTime;
-    self.finishId = finishTime;
-    self.specialStr = [NSString stringWithFormat:@"%@%@%@",self.timeId,@"至",self.finishId];
+    self.left = startTime;
+    self.right = finishTime;
+    self.specialStr = [NSString stringWithFormat:@"%@%@%@",self.left,@"至",self.right];
     abc = exit;
     [_upTableView reloadData];
 }
@@ -301,8 +370,8 @@
     
     self.timeStr = string;
     abc = exit;
-    self.timeId = @"0";
-    self.finishId = @"0";
+    self.left = nil;
+    self.right = nil;
 
     [_upTableView reloadData];
 }
@@ -354,24 +423,18 @@
 }
 
 #pragma mark
-#pragma mark -MD5加密规则
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
-}
-#pragma mark
 #pragma mark - 完成定制事件
 -(void)finishMade{
-
+    if (_destinationStr ==nil) {
+        _destinationStr = @"不限";
+    }if (_priceStr ==nil) {
+        _priceStr = @"不限";
+    }
+    
+    if ([_destinationStr isEqualToString:@"不限"] && [_priceStr isEqualToString:@"不限"]) {
+        UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"目的地和预算请选择一个" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+        [sheet showInView:self.view];
+    }else{
     //获取当前时间戳
     NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
     NSTimeInterval a=[dat timeIntervalSince1970];
@@ -404,28 +467,32 @@
         _timeId=@"0";
     }if (_finishId==nil) {
         _finishId = @"0";
+    }if (_left==nil) {
+        _left = @"0";
+    }if (_right==nil) {
+        _right =@"0";
     }
     NSString * fromCity = self.cityId;
     NSString * toCity = self.destinationId;
     NSString * pirce = self.priceId;
     NSString * travelDays = self.travelId;
-    NSString * travelDate = self.timeId;
-    NSString * travelDateEnd = self.finishId;
+    NSString * travelDate = self.left;
+    NSString * travelDateEnd = self.right;
     NSString * times = self.mameId;
     NSString * together = self.togetherId;
     NSString * travelType = self.preferenceId;
     
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@%@%@%@%@%@%@%@%@",fromCity,memberId,orderId,pirce,times,timeString,toCity,together,travelDate,travelDateEnd,travelDays,travelType,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
     orderId = [NSString stringWithFormat:@"%@=%@%@",@"orderId",orderId,@"&"];
-    travelDate = [NSString stringWithFormat:@"%@=%@%@",@"travelDate",self.timeId,@"&"];
-    travelDateEnd = [NSString stringWithFormat:@"%@=%@%@",@"travelDateEnd",self.finishId,@"&"];
+    travelDate = [NSString stringWithFormat:@"%@=%@%@",@"travelDate",self.left,@"&"];
+    travelDateEnd = [NSString stringWithFormat:@"%@=%@%@",@"travelDateEnd",self.right,@"&"];
     fromCity = [NSString stringWithFormat:@"%@=%@%@",@"fromCity",self.cityId,@"&"];
     pirce = [NSString stringWithFormat:@"%@=%@%@",@"pirce",self.priceId,@"&"];
     toCity = [NSString stringWithFormat:@"%@=%@%@",@"toCity",self.destinationId,@"&"];
@@ -434,21 +501,27 @@
     together = [NSString stringWithFormat:@"%@=%@%@",@"together",together,@"&"];
     travelType = [NSString stringWithFormat:@"%@=%@%@",@"travelType",travelType,@"&"];
     
-    
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@%@%@%@%@%@%@%@%@",kSaveUrl,time,travelDate,fromCity,pirce,toCity,travelDays,times,travelDateEnd,together,travelType,memberId,orderId];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kSaveUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@%@%@%@%@%@%@%@%@",url,time,travelDate,fromCity,pirce,toCity,travelDays,times,travelDateEnd,together,travelType,memberId,orderId];
     
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-    NSLog(@"%@",finally);
 
-[ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
+    [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
     
     NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
     
     if ([[[dic objectForKey:@"code"] stringValue] isEqualToString:@"0"]) {
         
-        UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"游谱提示您" message:@"添加定制成功" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-        [alert show];
+        if (_orderIds==nil) {
+ 
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"添加定制成功" delegate:self cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
+            
+        }else{
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"修改定制成功" delegate:self cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
+        }
         
         NSDictionary * order = [dic objectForKey:@"data"];
         NSString * orderId = [order objectForKey:@"orderId"];
@@ -457,39 +530,65 @@
 
     }else if ([[[dic objectForKey:@"code"] stringValue] isEqualToString:@"3"]){
         
-        UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"定制条件重复" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-        [alert show];
+        UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"定制条件重复" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+        [sheet showInView:self.view];
     }
 
     }];
+    }
     
 }
 
+- (void)actionSheet:(UIActionSheet *)actionSheet willDismissWithButtonIndex:(NSInteger)buttonIndex{
+    
+    if (actionSheet !=action) {
+        
+        _cityName = [[NSUserDefaults standardUserDefaults]objectForKey:@"cityName"];
+        _destinationStr = @"不限";
+        _priceStr = @"不限";
+        _travelStr = @"不限";
+        _specialStr = nil;
+        _mameStr = @"不限";
+        _togetherStr = @"不限";
+        _preferenceStr = @"不限";
+        _cityId = [[NSUserDefaults standardUserDefaults]objectForKey:@"fromCityId"];
+        _destinationId = @"0";
+        _left = nil;
+        _right = nil;
+        _travelId = @"0";
+        _priceId = @"0";
+        _mameId = @"0";
+        _togetherId = @"0";
+        _preferenceId = @"0";
+        
+        if (_orderIds==nil) {
+            [[NSNotificationCenter defaultCenter]postNotificationName:@"added" object:nil];
+        }else{
+            
+            NSDictionary * dic = [NSDictionary dictionaryWithObject:_orderIds forKey:@"location"];
+            [[NSNotificationCenter defaultCenter]postNotificationName:@"added" object:nil userInfo:dic];
+        }
+        _orderIds = nil;
+        
+        AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        appDelegate.tab.selectedIndex = 1;
+        [self dismissViewControllerAnimated:YES completion:nil];
+        
+        if (![[UIApplication sharedApplication] isRegisteredForRemoteNotifications]) {
+            
+            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:nil message:@"您的特惠定制通知已关闭,不会收到我们为您推荐的特惠行程"delegate:self cancelButtonTitle:nil otherButtonTitles:@"您可以通过设置->通知->游谱特惠 打开定制通知" , nil];
+            [alert show];
+        }
+        
+    }
+    
+    
+}
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     
-    _cityName = [[NSUserDefaults standardUserDefaults]objectForKey:@"cityName"];
-    _destinationStr = @"不限";
-    _priceStr = @"不限";
-    _travelStr = @"不限";
-    _specialStr = @"不限";
-    _mameStr = @"不限";
-    _togetherStr = @"不限";
-    _preferenceStr = @"不限";
-    
-    if (_orderIds==nil) {
-        [[NSNotificationCenter defaultCenter]postNotificationName:@"added" object:nil];
-    }else{
-        
-        NSDictionary * dic = [NSDictionary dictionaryWithObject:_orderIds forKey:@"location"];
-        [[NSNotificationCenter defaultCenter]postNotificationName:@"added" object:nil userInfo:dic];
-    }
-    _orderIds = nil;
-
-    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    appDelegate.tab.selectedIndex = 1;
-    [self dismissViewControllerAnimated:YES completion:nil];
-    
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"Notification — prefs:root=NOTIFICATIONS_ID"]];
 }
+
 #pragma mark
 #pragma mark -tableview相关
 -(void)createTableView{
@@ -497,7 +596,15 @@
     self.upTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 64, self.view.frame.size.width, self.view.frame.size.height-108) style:UITableViewStylePlain];
     _upTableView.dataSource = self;
     _upTableView.delegate = self;
+    [_upTableView setShowsHorizontalScrollIndicator:NO];
+    [_upTableView setShowsVerticalScrollIndicator:NO];
+    [_upTableView setHidden:NO];
     [self setExtraCellLineHidden:_upTableView];
+    UILabel *lables = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 20)];
+    [lables setBackgroundColor:[UIColor colorWithRed:235/255.0 green:235/255.0 blue:235/255.0 alpha:1]];
+    lables.layer.borderColor = [UIColor colorWithRed:215/255.0 green:215/255.0 blue:215/255.0 alpha:1].CGColor;
+    lables.layer.borderWidth = 0.4;
+    [_upTableView setTableHeaderView:lables];
     [self.view addSubview:_upTableView];
 
     
@@ -525,23 +632,17 @@
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
     
     if (section==0) {
-        return 20;
+        return 0;
     }else if (section==1){
         return 40;
     }else{
-        return 60;
+        return 80;
     }
-
-    
 }
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
     
     if (section==0) {
-        UILabel *lables = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 20)];
-        [lables setBackgroundColor:[UIColor colorWithRed:235/255.0 green:235/255.0 blue:235/255.0 alpha:1]];
-        lables.layer.borderColor = [UIColor colorWithRed:204/255.0 green:204/255.0 blue:204/255.0 alpha:1].CGColor;
-        lables.layer.borderWidth = 0.8;
-        return lables;
+        return nil;
         
     }else if (section==1){
         lable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 40)];
@@ -549,11 +650,19 @@
         [lable setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.05]];
         [lable setTextColor:[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1]];
         [lable setFont:[UIFont systemFontOfSize:14]];
+        CALayer * upLay = [CALayer layer];
+        upLay.frame = CGRectMake(0, 0, self.view.frame.size.width, 0.7);
+        upLay.backgroundColor =[UIColor colorWithRed:215/255.0 green:215/255.0 blue:215/255.0 alpha:1].CGColor;
+        [lable.layer addSublayer:upLay];
+        CALayer * downLay = [CALayer layer];
+        downLay.frame = CGRectMake(0, 39, self.view.frame.size.width, 0.4);
+        downLay.backgroundColor =[UIColor colorWithRed:215/255.0 green:215/255.0 blue:215/255.0 alpha:1].CGColor;
+        [lable.layer addSublayer:downLay];
         return lable;
     }else{
-        UIView * view= [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 60)];
+        UIView * view= [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 80)];
         [view setBackgroundColor:[UIColor colorWithRed:235/255.0 green:235/255.0 blue:235/255.0 alpha:1]];
-        UIButton *button = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 300, 40)];
+        UIButton *button = [[UIButton alloc] initWithFrame:CGRectMake(10, 20, 300, 40)];
         [button setTitle:@"完成定制" forState:UIControlStateNormal];
         [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         [button setBackgroundImage:[UIImage imageNamed:@"橙条长"] forState:UIControlStateNormal];
@@ -593,11 +702,11 @@
                 [cell.lable setText:@"不限"];
             }
             if (_i==2) {
-             
-                [cell.lable setText:_specialStr];
+                
+            [cell.lable setText:_specialStr];
             
             }
-            if (_i==1) {
+            if (_i==1 || _specialStr==nil) {
                 [cell.lable setText:@"不限"];
             }
             
@@ -665,7 +774,6 @@
     return cell;
     
     
-    
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -682,13 +790,13 @@
                 _fromNavigationController = [[UINavigationController alloc] initWithRootViewController:from];
                 [self presentViewController:_fromNavigationController animated:NO completion:nil];
             }
+                break;
             case 1:
             {
                 _i=1;
                
-                toCityViewController * des = [[toCityViewController alloc]init];
+                toCityViewController * des = [toCityViewController shareSingle];
                 des.delegate = self;
-                des.toCityStr = _destinationStr;
                 _toCityNavigationController= [[UINavigationController alloc] initWithRootViewController:des];
                 [self presentViewController:_toCityNavigationController animated:NO completion:nil];
             }
@@ -698,6 +806,11 @@
                 _i=1;
                 MonthsViewController * time = [[MonthsViewController alloc] init];
                 time.delegate = self;
+                if (_left != nil && ![_left isEqualToString:@"0"]) {
+                    time.leftTime = _left;
+                }if (_right !=nil && ![_right isEqualToString:@"0"]) {
+                    time.rightTime = _right;
+                }
                 UINavigationController *na = [[UINavigationController alloc] initWithRootViewController:time];
                 [self presentViewController:na animated:NO completion:nil];
             }

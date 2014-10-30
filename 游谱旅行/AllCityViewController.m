@@ -13,6 +13,7 @@ static AllCityViewController * all = nil;
 @interface AllCityViewController ()
 {
     NSInteger _i;
+    MBProgressHUD * _progressHUD;
 }
 
 @property (nonatomic, strong) NSIndexPath * lastpath;
@@ -47,16 +48,14 @@ static AllCityViewController * all = nil;
     return self;
 }
 
--(void)viewWillAppear:(BOOL)animated{
-    
-    [self color];
-}
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    [self createTableView];
+
+    [self color];
     [self fromConnect];
+    [self createTableView];
     
 }
 
@@ -70,12 +69,15 @@ static AllCityViewController * all = nil;
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
     self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
 }
 -(void)backActon{
     
@@ -83,20 +85,23 @@ static AllCityViewController * all = nil;
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (NSString *)md5:(NSString *)str
+-(void)addIndicator
 {
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
+    _progressHUD = [[MBProgressHUD alloc] initWithView:self.view];
+    [self.view addSubview:_progressHUD];
+    [self.view bringSubviewToFront:_progressHUD];
+    [_progressHUD setMode:MBProgressHUDModeIndeterminate];
+    [_progressHUD setLabelText:@"加载中..."];
+    [_progressHUD showWhileExecuting:@selector(myProgressTask) onTarget:self withObject:nil animated:YES];
 }
-
+-(void) myProgressTask{
+    float progress = 0.0f;
+    while (progress < 1.0f) {
+        progress -=0.01f;
+        _progressHUD.progress = progress;
+        usleep(50000);
+    }
+}
 #pragma mark
 #pragma mark - 网络请求
 -(void)fromConnect{
@@ -109,13 +114,14 @@ static AllCityViewController * all = nil;
     //加密规则
     NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
     NSString * QZY = [NSString stringWithFormat:@"%@%@",timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",kMainConnectUrl,time];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kMainConnectUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",url,time];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
     
@@ -126,6 +132,8 @@ static AllCityViewController * all = nil;
         [self.dictionary addEntriesFromDictionary:dic];
         
         [_table reloadData];
+        [_progressHUD hide:YES];
+        [_progressHUD removeFromSuperViewOnHide];
     }];
     
 }
@@ -139,10 +147,12 @@ static AllCityViewController * all = nil;
 
 -(void)createTableView{
     
-    self.table = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height) style:UITableViewStylePlain];
+    self.table = [[UITableView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-64) style:UITableViewStylePlain];
     _table.dataSource = self;
     _table.delegate = self;
-    
+    if ([[[UIDevice currentDevice]systemVersion] floatValue]>=7.0) {
+        [_table setSeparatorInset:UIEdgeInsetsMake(0, 0, 0, 0)];
+    }
     [self hiddenLine:_table];
     
     [self.view addSubview:_table];
@@ -164,9 +174,24 @@ static AllCityViewController * all = nil;
     
     NSArray * array = [self.dictionary objectForKey:@"data"];
     NSDictionary * dic = [array objectAtIndex:indexPath.row];
-    
     [cell.textLabel setText:[dic objectForKey:@"cityName"]];
     [cell.textLabel setFont: [UIFont systemFontOfSize:16]];
+
+    if (_lastpath != nil) {
+        if (_lastpath.row == indexPath.row) {
+            [cell.image setImage:[UIImage imageNamed:@"钩钩"]];
+            cell.image.hidden = NO;
+        }
+        else {
+            
+            [cell.image setHidden:YES];
+        }
+    }
+    if ([[dic objectForKey:@"cityName"]isEqualToString:_nowName] ) {
+        _lastpath = indexPath;
+        [cell.image setImage:[UIImage imageNamed:@"钩钩"]];
+    }
+    
     
     return cell;
 }
@@ -202,7 +227,8 @@ static AllCityViewController * all = nil;
     [single.singleDic addEntriesFromDictionary:diction];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"qzy" object:nil userInfo:single.singleDic];
     
-    [self.delegate cityNames:[dic objectForKey:@"cityName"]];
+    _nowName = [dic objectForKey:@"cityName"];
+    [self.delegate cityNames:_nowName];
     
     [self dismissViewControllerAnimated:NO completion:nil];
     

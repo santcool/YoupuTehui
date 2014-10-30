@@ -14,6 +14,7 @@
 
 @property (nonatomic,strong) NSMutableDictionary * dictionary;
 @property (nonatomic,strong) UITableView * table;
+@property (nonatomic,strong) NSString * nowName;
 
 @property (nonatomic, assign) id<allDelegate> delegate;
 

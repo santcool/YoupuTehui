@@ -1,4 +1,4 @@
-//
+ //
 //  NavigationView.m
 //  游谱旅行
 //
@@ -33,21 +33,30 @@ static NavigationView * navigation = nil;
         
         self.dictionary = [[NSMutableDictionary alloc] init];
         [self fromConnect];
+        [self dingwei];
         
-        [self setBackgroundColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:70/255.0 alpha:1]];
-        [self setFrame:CGRectMake(0, 0, 320, 64)];
+        [self setBackgroundColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
+        [self setFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 64)];
         
-        UIImageView * image = [[UIImageView alloc] initWithFrame:CGRectMake(98, 30, 124, 26)];
-        [image setImage:[UIImage imageNamed:@"顶部logo"]];
+        self.backButton = [[UIButton alloc]initWithFrame:CGRectMake(15, 28, 30, 30)];
+        [_backButton setBackgroundImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+        [self addSubview:_backButton];
+        
+        UILabel * image = [[UILabel alloc] initWithFrame:CGRectMake(98, 30, 124, 26)];
+        [image setText:@"推荐特惠"];
+        [image setTextColor:[UIColor whiteColor]];
+        [image setTextAlignment:NSTextAlignmentCenter];
+        [image setFont:[UIFont systemFontOfSize:18]];
         [self addSubview:image];
         
         self.button = [[UIButton alloc] initWithFrame:CGRectMake(250, 30, 80, 30)];
         [_button.titleLabel setFont:[UIFont systemFontOfSize:14]];
-        [_button setTitle:@"城市" forState:UIControlStateNormal];
+        [_button setTitle:@"定位中" forState:UIControlStateNormal];
         [_button setTitleColor:[UIColor colorWithRed:255/255.0 green:255/255.0 blue:255/255.0 alpha:1] forState:UIControlStateNormal];
+        [_button.titleLabel setTextAlignment:NSTextAlignmentCenter];
         [self addSubview:_button];
         
-        _aImage = [[TouchImage alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+        self.aImage = [[TouchImage alloc] initWithFrame:CGRectMake(-2, 0, 30, 30)];
         [_aImage setImage:[UIImage imageNamed:@"首页切图_13"]];
         [_button addSubview:_aImage];
     }
@@ -58,28 +67,32 @@ static NavigationView * navigation = nil;
 {
     if ([CLLocationManager locationServicesEnabled] == YES) {
         
-        _locationManager = [[CLLocationManager alloc] init];//创建位置管理器
+        self.locationManager = [[CLLocationManager alloc] init];//创建位置管理器
+        if ([_locationManager respondsToSelector:@selector(requestAlwaysAuthorization)]) {
+            [_locationManager requestAlwaysAuthorization];
+        }
         _locationManager.delegate=self;
         _locationManager.desiredAccuracy=kCLLocationAccuracyBest;
         _locationManager.distanceFilter=1000.0f;
         //启动位置更新
         [_locationManager startUpdatingLocation];
+    }else{
+        
+        NSArray * arr = [self.dictionary objectForKey:@"data"];
+        NSDictionary *dic = [arr objectAtIndex:0];
+        NSString * str = [dic objectForKey:@"areaId"];
+        NSString * idStr = [dic objectForKey:@"id"];
+        NSString * cityAll = [dic objectForKey:@"cityName"];
+        [[NSUserDefaults standardUserDefaults] setObject:cityAll forKey:@"cityName"];
+        [[NSUserDefaults standardUserDefaults]setObject:idStr forKey:@"fromCityId"];
+        [[NSUserDefaults standardUserDefaults]synchronize];
+        NSDictionary * diction = [NSDictionary dictionaryWithObjectsAndKeys:str,@"dic",idStr,@"idStr", nil];
+        SingleClass * single  = [SingleClass singleClass];
+        [single.singleDic addEntriesFromDictionary:diction];
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"qzy" object:nil userInfo:single.singleDic];
+
     }
     
-}
-
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
 }
 
 #pragma mark
@@ -94,13 +107,14 @@ static NavigationView * navigation = nil;
     //加密规则
     NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
     NSString * QZY = [NSString stringWithFormat:@"%@%@",timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",kMainConnectUrl,time];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kMainConnectUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",url,time];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
     
@@ -109,8 +123,6 @@ static NavigationView * navigation = nil;
 
         NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
         [self.dictionary addEntriesFromDictionary:dic];
-        
-        [self dingwei];
     }];
     
 }
@@ -121,8 +133,6 @@ static NavigationView * navigation = nil;
     CLLocationCoordinate2D coor = currentLocation.coordinate;
     self.latitude =  coor.latitude;
     self.longitude = coor.longitude;
-    NSLog(@"%f",self.latitude);
-    NSLog(@"%f",self.longitude);
     
     CLLocation * location = [[CLLocation alloc] initWithLatitude:self.latitude longitude:self.longitude];
     CLGeocoder *geocoder = [[CLGeocoder alloc] init];
@@ -131,8 +141,14 @@ static NavigationView * navigation = nil;
             CLPlacemark *placemark = [array objectAtIndex:0];
             if (placemark.locality ==NULL) {
                 NSString *city = placemark.administrativeArea;
-                NSString *cityName = [city stringByReplacingOccurrencesOfString:@"市" withString:@""];
-                [_button setTitle:cityName forState:UIControlStateNormal];
+                for (int i = 0; i< city.length; i++) {
+                    NSString * names = [city substringWithRange:NSMakeRange(i,1)];
+                    if ([names isEqualToString:@"市"]) {
+                        names = [city substringWithRange:NSMakeRange(0, i)];
+                        i = city.length;
+                    }
+                    [_button setTitle:names forState:UIControlStateNormal];
+                }
                 
                 NSArray * arr = [self.dictionary objectForKey:@"data"];
                 for (NSDictionary * dic  in arr) {
@@ -147,16 +163,40 @@ static NavigationView * navigation = nil;
                         SingleClass * single  = [SingleClass singleClass];
                         [single.singleDic addEntriesFromDictionary:diction];
                         [[NSNotificationCenter defaultCenter] postNotificationName:@"qzy" object:nil userInfo:single.singleDic];
+                    }if (![_button.currentTitle rangeOfString:[dic objectForKey:@"cityName"]].length<0) {
+                        
+                        [_button setTitle:@"上海" forState:UIControlStateNormal];
+                        NSString * str = @"15";
+                        NSString * idStr = @"247";
+                        NSString * cityAll = @"上海";
+                        [[NSUserDefaults standardUserDefaults] setObject:cityAll forKey:@"cityName"];
+                        [[NSUserDefaults standardUserDefaults]setObject:idStr forKey:@"fromCityId"];
+                        [[NSUserDefaults standardUserDefaults]synchronize];
+                        NSDictionary * diction = [NSDictionary dictionaryWithObjectsAndKeys:str,@"dic",idStr,@"idStr", nil];
+                        SingleClass * single  = [SingleClass singleClass];
+                        [single.singleDic addEntriesFromDictionary:diction];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:@"qzy" object:nil userInfo:single.singleDic];
                     }
                 }  
                 [_aImage setImage:[UIImage imageNamed:@"定位后"]];
+                if (_button.currentTitle.length==4) {
+                    [_aImage setFrame:CGRectMake(-8, 0, 30, 30)];
+                }if (_button.currentTitle.length==3) {
+                    [_aImage setFrame:CGRectMake(-6, 0, 30, 30)];
+                }
                 [_button.titleLabel setFont:[UIFont systemFontOfSize:14]];
                 [_button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
             }else{
                 
                 NSString * city = placemark.locality;
-                NSString * cityName = [city stringByReplacingOccurrencesOfString:@"省" withString:@""];
-                [_button setTitle:cityName forState:UIControlStateNormal];
+                for (int i = 0; i< city.length; i++) {
+                    NSString * names = [city substringWithRange:NSMakeRange(i,1)];
+                    if ([names isEqualToString:@"市"]) {
+                        names = [city substringWithRange:NSMakeRange(0, i)];
+                        i = city.length;
+                    }
+                    [_button setTitle:names forState:UIControlStateNormal];
+                }
                 NSArray * arr = [self.dictionary objectForKey:@"data"];
                 for (NSDictionary * dic  in arr) {
                     if ([_button.currentTitle isEqualToString:[dic objectForKey:@"cityName"]]) {
@@ -171,10 +211,29 @@ static NavigationView * navigation = nil;
                         [single.singleDic addEntriesFromDictionary:diction];
                         [[NSNotificationCenter defaultCenter] postNotificationName:@"qzy" object:nil userInfo:single.singleDic];
                    
+                    }if (![_button.currentTitle rangeOfString:[dic objectForKey:@"cityName"]].length<0) {
+                        
+                        [_button setTitle:@"上海" forState:UIControlStateNormal];
+                        NSString * str = @"15";
+                        NSString * idStr = @"247";
+                        NSString * cityAll = @"上海";
+                        [[NSUserDefaults standardUserDefaults] setObject:cityAll forKey:@"cityName"];
+                        [[NSUserDefaults standardUserDefaults]setObject:idStr forKey:@"fromCityId"];
+                        [[NSUserDefaults standardUserDefaults]synchronize];
+                        NSDictionary * diction = [NSDictionary dictionaryWithObjectsAndKeys:str,@"dic",idStr,@"idStr", nil];
+                        SingleClass * single  = [SingleClass singleClass];
+                        [single.singleDic addEntriesFromDictionary:diction];
+                        [[NSNotificationCenter defaultCenter] postNotificationName:@"qzy" object:nil userInfo:single.singleDic];
                     }
+                    
                 }
 
                 [_aImage setImage:[UIImage imageNamed:@"定位后"]];
+                if (_button.currentTitle.length==4) {
+                    [_aImage setFrame:CGRectMake(-8, 0, 30, 30)];
+                }if (_button.currentTitle.length==3) {
+                    [_aImage setFrame:CGRectMake(-6, 0, 30, 30)];
+                }
                 [_button.titleLabel setFont:[UIFont systemFontOfSize:14]];
                 [_button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
             }
@@ -184,7 +243,6 @@ static NavigationView * navigation = nil;
     [_locationManager stopUpdatingLocation];
     
 }
-
 
 /*
 // Only override drawRect: if you perform custom drawing.

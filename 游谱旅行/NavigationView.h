@@ -13,11 +13,9 @@
 
 @interface NavigationView : UIView<CLLocationManagerDelegate>{
     
-    CLLocationManager *  _locationManager;
-    TouchImage * _aImage;
-    
 }
 
+@property (strong, nonatomic) CLLocationManager *locationManager;
 @property (nonatomic,strong) UIControl * control;
 
 @property (nonatomic,strong) NSMutableDictionary * dictionary;
@@ -25,6 +23,8 @@
 @property (nonatomic,strong) UIButton * button;
 @property (nonatomic,assign) double latitude;
 @property (nonatomic,assign) double longitude;
+@property (nonatomic,strong) TouchImage * aImage;
+@property (nonatomic,strong) UIButton * backButton;
 
 +(id)shareSingle;
 -(void)dingwei;

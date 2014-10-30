@@ -14,6 +14,10 @@
 
 @property (nonatomic, strong) NSString * userName;
 @property (nonatomic, strong) NSString * passWord;
+@property (nonatomic, strong) NSString * userId;
+@property (nonatomic, strong) NSString * cityAreaId;
+@property (nonatomic, strong) NSString * cityId;
+@property (nonatomic, assign) NSInteger tabLocation;
 
 @property (nonatomic, strong) UINavigationController * detailNavigation;
 

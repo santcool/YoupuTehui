@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface DetailViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,UIGestureRecognizerDelegate>
+@interface DetailViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,UIGestureRecognizerDelegate,UIActionSheetDelegate,EMChatManagerDelegate>
 
 @property (nonatomic, strong) NSString * lineNumber;//线路Id
 @property (nonatomic, strong) NSMutableDictionary * detailDic;

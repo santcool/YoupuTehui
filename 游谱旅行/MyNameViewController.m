@@ -44,12 +44,14 @@
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
-    self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];;
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"保存" style:UIBarButtonItemStylePlain target:self action:@selector(saveAction)];
     self.navigationItem.rightBarButtonItem.tintColor = [UIColor whiteColor];
@@ -57,9 +59,8 @@
 
 -(void)backActon{
     
-    [self dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+    [_field resignFirstResponder];
+    [self dismissViewControllerAnimated:YES completion:nil];
     
 }
 
@@ -70,7 +71,7 @@
     if (!_indicator.isAnimating) {
         //添加菊花
         _indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        [_indicator setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.8]];
+        [_indicator setBackgroundColor:[UIColor colorWithWhite:1 alpha:0.5]];
         [_indicator setColor:[UIColor colorWithRed:224/255.0  green:89/255.0 blue:60/255.0 alpha:1]];
         [_indicator setFrame:CGRectMake(0,0, self.view.frame.size.width, self.view.frame.size.height)];
         [_indicator startAnimating];
@@ -81,37 +82,29 @@
 -(void)saveAction{
     
     [self changeName];
-
     [self.delegate names:_field.text];
-    
     [self dismissViewControllerAnimated:NO completion:nil];
     
 }
 
 -(void)createTextField{
     
-    self.field = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 50)];
-    [_field setBorderStyle:UITextBorderStyleRoundedRect];
+    UILabel * lable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 20)];
+    [lable setTextColor:[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1]];
+    [lable setFont:[UIFont systemFontOfSize:14]];
+    [self.view addSubview:lable];
+    
+    self.field = [[CustomTextField alloc] initWithFrame:CGRectMake(0, 20, self.view.frame.size.width, 50)];
+    [_field setBorderStyle:UITextBorderStyleNone];
     [_field setFont:[UIFont systemFontOfSize:14]];
+    _field.layer.borderColor = [UIColor colorWithRed:204/255.0 green:204/255.0 blue:204/255.0 alpha:1].CGColor;
+    _field.layer.borderWidth = 0.5;
     [_field setTextColor:[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1]];
+    [_field setBackgroundColor:[UIColor whiteColor]];
     [_field setText:_myName];
     _field.delegate = self;
     [self.view addSubview:_field];
     
-}
-
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
 }
 
 -(void)changeName{
@@ -130,46 +123,53 @@
     NSString * type = @"nickName";
     NSString * value = _field.text;
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",memberId,timeString,type,value,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     NSString *outputStr = nil;
     
-    int length = [_field.text length];
-    
-    for (int i=0; i<length; ++i)
-    {
-        NSRange range = NSMakeRange(i, 1);
-        NSString *subString = [_field.text substringWithRange:range];
-        const char *cString = [subString UTF8String];
+    unichar c = [_field.text characterAtIndex:0];
+    if (c >=0x4E00 && c <=0x9FFF) {
+        int length = [_field.text length];
         
-
-        
-        if (strlen(cString) == 3)
+        for (int i=0; i<length; ++i)
         {
-            outputStr = (NSString *)
-            CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
-                                                                      (CFStringRef)_field.text,
-                                                                      NULL,
-                                                                      (CFStringRef)@"!*'();:@&=+$,/?%#[]",
-                                                                      kCFStringEncodingUTF8));
+            NSRange range = NSMakeRange(i, 1);
+            NSString *subString = [_field.text substringWithRange:range];
+            const char *cString = [subString UTF8String];
             
+            
+            
+            if (strlen(cString) == 3)
+            {
+                outputStr = (NSString *)
+                CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
+                                                                          (CFStringRef)_field.text,
+                                                                          NULL,
+                                                                          (CFStringRef)@"!*'();:@&=+$,/?%#[]",
+                                                                          kCFStringEncodingUTF8));
+                value = outputStr;
+            }
         }
+    }else{
+        
+        value = _field.text;
     }
-    value = outputStr;
+    
+    
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
     type = [NSString stringWithFormat:@"%@=%@%@",@"type",type,@"&"];
     value = [NSString stringWithFormat:@"%@=%@%@",@"value",value,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kReviseUrl,time,type,value];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kReviseUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,type,value];
     
     NSString * finallyUrl = [NSString stringWithFormat:@"%@%@",lastUrl,memberId];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",finallyUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         
@@ -184,7 +184,10 @@
     
 }
 
-
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+    
+    [_field resignFirstResponder];
+}
 
 - (void)didReceiveMemoryWarning
 {

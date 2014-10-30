@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface PassWordViewController : UIViewController<UITextFieldDelegate,UIAlertViewDelegate>
+@interface PassWordViewController : UIViewController<UITextFieldDelegate,UIActionSheetDelegate>
 {
     CustomTextField * zhText;
     CustomTextField * mmText;

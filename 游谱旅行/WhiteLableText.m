@@ -19,6 +19,8 @@
     return self;
 }
 
+#pragma mark 
+#pragma mark ----------给文字加上白色描边
 - (void)drawTextInRect:(CGRect)rect {
     
     CGSize shadowOffset = self.shadowOffset;

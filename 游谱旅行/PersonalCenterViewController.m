@@ -18,7 +18,9 @@
     UIButton * _collectButton;
     NSInteger _k;
     TouchImage * _userPhoto;
-    UIActivityIndicatorView * _indicator;//菊花
+     UILabel * _nameLable;
+    MBProgressHUD * _progressHUD;
+
 }
 @property (strong, nonatomic) UIView *aView;
 
@@ -35,25 +37,30 @@
         self.collectArr = [[NSMutableArray alloc] init];
         self.collectDic = [[NSMutableDictionary alloc]init];
         self.makeThing = [[NSMutableDictionary alloc]init];
-        self.numberArray = [NSMutableArray arrayWithObjects:@"1",@"2",@"3",@"4",@"5",@"6",@"7",@"8",@"9",@"10", nil];
+        self.numberArray = [NSMutableArray array];
         _i=1;
+        _k=0;
     }
     return self;
 }
 
 -(void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
-    
+
     if ([[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"]==nil) {
 
     }else{
         [self qzy];
-        [self collectList];
-        [self madeListConnect];
         [self userMessage];
+        [self madeListConnect];
+        [self collectList];
     }
 }
+-(void)viewWillDisappear:(BOOL)animated{
+    [_nameLable removeFromSuperview];
+    _k=1;
 
+}
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -65,7 +72,10 @@
     [self bigTableView];
     [self editMade];
     [self createButton];
-    
+    [self addMakeMessage];
+}
+
+-(void)addMakeMessage{
     _aView = [[UIView alloc]initWithFrame:CGRectMake(0, 175, self.view.frame.size.width, 180)];
     _button = [[UIButton alloc]initWithFrame:CGRectMake(50 ,20,168, 37)];
     [_button setBackgroundImage:[UIImage imageNamed:@"无定制"] forState:UIControlStateNormal];
@@ -78,20 +88,24 @@
     [_addButton setBackgroundImage:[UIImage imageNamed:@"橙条长"] forState:UIControlStateNormal];
     [_aView addSubview:_addButton];
     [self.view addSubview:_aView];
-
 }
 
 //添加菊花
 -(void)addIndicator
 {
-    if (!_indicator.isAnimating) {
-        //添加菊花
-        _indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        [_indicator setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.8]];
-        [_indicator setColor:[UIColor colorWithRed:224/255.0  green:89/255.0 blue:60/255.0 alpha:1]];
-        [_indicator setFrame:CGRectMake(0,0, self.view.frame.size.width, self.view.frame.size.height)];
-        [_indicator startAnimating];
-        [self.view addSubview:_indicator];
+    _progressHUD = [[MBProgressHUD alloc] initWithView:self.view];
+    [self.view addSubview:_progressHUD];
+    [_progressHUD setMode:MBProgressHUDModeIndeterminate];
+    [_progressHUD setLabelText:@"加载中..."];
+    _progressHUD.delegate = self;
+    [_progressHUD showWhileExecuting:@selector(myProgressTask) onTarget:self withObject:nil animated:YES];
+}
+-(void) myProgressTask{
+    float progress = 0.0f;
+    while (progress < 1.0f) {
+        progress -=0.01f;
+        _progressHUD.progress = progress;
+        usleep(50000);
     }
 }
 
@@ -103,7 +117,8 @@
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font = [UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
 
 }
@@ -119,19 +134,19 @@
     NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
     NSString * memberId =[[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@",memberId,timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",kUserInfoUrl,time];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kUserInfoUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",url,time];
     
     NSString * finallyUrl = [NSString stringWithFormat:@"%@%@",lastUrl,memberId];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",finallyUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         
@@ -139,6 +154,11 @@
         
         _userIcons = [[dic objectForKey:@"data"]objectForKey:@"picPath"];
         
+        if ([[[dic objectForKey:@"data"]objectForKey:@"nickName"]isEqualToString:@""]) {
+            _userName = [[dic objectForKey:@"data"]objectForKey:@"email"];
+        }else{
+           _userName =[[dic objectForKey:@"data"]objectForKey:@"nickName"];
+        }
         [self touxiang];
     }];
 }
@@ -153,16 +173,25 @@
     
 }
 -(void)touxiang{
-    _userPhoto = [[TouchImage alloc]initWithFrame:CGRectMake(130, 40, 60, 60)];
+    _userPhoto = [[TouchImage alloc]initWithFrame:CGRectMake(80, 40, 60, 60)];
     if ([_userIcons isEqualToString:@""]) {
-        [_userPhoto setImage:[UIImage imageNamed:@"默认头像"]];
+        [_userPhoto setImage:[UIImage imageNamed:@"默认头像.jpg"]];
     }else{
     [_userPhoto setImageWithURL:[NSURL URLWithString:_userIcons]];
     }
     _userPhoto.layer.cornerRadius = 30;
     _userPhoto.layer.masksToBounds = YES;
+    _userPhoto.layer.borderWidth = 2;
+    _userPhoto.layer.borderColor = [UIColor whiteColor].CGColor;
     [_userPhoto addTarget:self action:@selector(personAnd)];
     [image addSubview:_userPhoto];
+    
+    _nameLable = [[UILabel alloc]initWithFrame:CGRectMake(150, 40, 150, 60)];
+    [_nameLable setTextColor:[UIColor whiteColor]];
+    [_nameLable setText:_userName];
+    [_nameLable setFont:[UIFont systemFontOfSize:14]];
+    [image addSubview:_nameLable];
+    
     
 }
 -(void)personAnd{
@@ -294,6 +323,8 @@
 #pragma mark  ----------------定制列表网络请求
 -(void)madeListConnect{
     
+    [_numberArray removeAllObjects];
+    
     [self addIndicator];
     
     //获取当前时间戳
@@ -305,18 +336,18 @@
     NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
     NSString * memberId = [[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@",memberId,timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@",kCustomUrl,time,memberId];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kCustomUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@",url,time,memberId];
     
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
         
@@ -324,17 +355,31 @@
         [_makeThing addEntriesFromDictionary:dic];
 
         if ([[_makeThing objectForKey:@"data"]count]==0) {
+            if (_downView.frame.origin.x==0) {
+                _aView.hidden = NO;
+            }else{
+                _aView.hidden = YES;
+            }
             
         }else{
             _aView.hidden = YES;
-            [_makeListTable reloadData];
-
         }
+        [_makeListTable reloadData];
+        [_progressHUD hide:YES];
         
-        [_indicator stopAnimating];
-        [_indicator removeFromSuperview];
-        
+        for (int i = 0 ; i< [[_makeThing objectForKey:@"data"] count]; i++) {
+            NSString * string = [NSString stringWithFormat:@"%d",i+1];
+            [_numberArray addObject:string];
+        }
     }];
+}
+
+-(void)hudWasHidden:(MBProgressHUD *)hud{
+    
+    if (hud==_progressHUD) {
+        [_progressHUD removeFromSuperview];
+        _progressHUD = nil;
+    }
 }
 
 #pragma mark
@@ -354,6 +399,7 @@
     self.makeListTable = [[UITableView alloc]initWithFrame:CGRectMake(0, 175, self.view.frame.size.width, self.view.frame.size.height-289) style:UITableViewStylePlain];
     _makeListTable.delegate = self;
     _makeListTable.dataSource = self;
+    [_makeListTable setShowsVerticalScrollIndicator:NO];
     
     if ([[[UIDevice currentDevice]systemVersion ] floatValue] >=7.0) {
         [_makeListTable setSeparatorInset:UIEdgeInsetsMake(0, 0, 0, 0)];
@@ -365,25 +411,9 @@
     [self.view addSubview:_makeListTable];
     
 }
-#pragma mark
-#pragma mark -MD5加密规则
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
-}
 
 -(void)collectList{
     
-    [self addIndicator];
     //获取当前时间戳
     NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
     NSTimeInterval a=[dat timeIntervalSince1970];
@@ -394,19 +424,19 @@
     NSString * page = [NSString stringWithFormat:@"%ld",(long)_i];
     NSString * memberId =[[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@",memberId,page,timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     page = [NSString stringWithFormat:@"%@=%@%@",@"page",page,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kCollectListUrl,time,memberId,page];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kCollectListUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,memberId,page];
     
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
         
@@ -415,15 +445,13 @@
         [self.collectDic addEntriesFromDictionary:dic];
         
         if ([[_collectDic objectForKey:@"data"]count]==0) {
-            
-   
+           
         }else{
             
             [_collectButton setHidden:YES];
-            [_table reloadData];
+            [_table setHidden:NO];
         }
-        [_indicator stopAnimating];
-        [_indicator removeFromSuperview];
+        [_table reloadData];
      
     }];
     
@@ -440,7 +468,7 @@
     self.table = [[UITableView alloc] initWithFrame:CGRectMake(0, 175, self.view.frame.size.width, self.view.frame.size.height-289) style:UITableViewStylePlain];
     _table.delegate =self;
     _table.dataSource = self;
-
+    [_table setShowsVerticalScrollIndicator:NO];
 
     [_table setRowHeight:100];
     
@@ -475,19 +503,19 @@
         NSString * memberId = [[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
         NSString * lineId= line;
         NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@",lineId,memberId,timeString,key];
-        NSString * qzy = [self md5:QZY];
+        NSString * qzy = [TeHuiModel md5:QZY];
         NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-        NSString * qaz = [self md5:qwe];
+        NSString * qaz = [TeHuiModel md5:qwe];
         
         //接口拼接
         NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
         memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
         lineId = [NSString stringWithFormat:@"%@=%@%@",@"lineId",lineId,@"&"];
-        NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kDeleteCollectUrl,time,memberId,lineId];
+        NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kDeleteCollectUrl];
+        NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,memberId,lineId];
         
         NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
         NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-        NSLog(@"%@",finally);
         
         [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
             
@@ -497,7 +525,10 @@
                 [array removeObjectAtIndex:[indexPath row]];  //删除数组里的数据
                 [tableView deleteRowsAtIndexPaths:[NSMutableArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];  //删除对应数据的cell
                 [_table reloadData];
-                
+                if (array.count==0) {
+                    [_collectButton setHidden:NO];
+                    [_collectButton setBackgroundImage:[UIImage imageNamed:@"无收藏"] forState:UIControlStateNormal];
+                }
             }
             
         }];
@@ -516,19 +547,19 @@
         NSString * memberId = [[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
         NSString * orderId = [[[_makeThing objectForKey:@"data"]objectAtIndex:indexPath.row ] objectForKey:@"id"];
         NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@",memberId,orderId,timeString,key];
-        NSString * qzy = [self md5:QZY];
+        NSString * qzy = [TeHuiModel md5:QZY];
         NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-        NSString * qaz = [self md5:qwe];
+        NSString * qaz = [TeHuiModel md5:qwe];
         
         //接口拼接
         NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
         memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
         orderId = [NSString stringWithFormat:@"%@=%@%@",@"orderId",orderId,@"&"];
-        NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kDeleteUrl,time,memberId,orderId];
+        NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kDeleteUrl];
+        NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,memberId,orderId];
         
         NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
         NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-        NSLog(@"%@",finally);
         
         [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
             
@@ -538,7 +569,9 @@
                 [array removeObjectAtIndex:[indexPath row]];  //删除数组里的数据
                 [tableView deleteRowsAtIndexPaths:[NSMutableArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];  //删除对应数据的cell
                 [_makeListTable reloadData];
-                
+                if (array.count==0) {
+                    [_aView setHidden:NO];
+                }
             }
             
         }];
@@ -569,9 +602,34 @@
         }
         NSArray * arr = [_collectDic objectForKey:@"data"];
         NSDictionary * dic = [arr objectAtIndex:indexPath.row];
-        [cell.image setImageWithURL:[NSURL URLWithString:[dic objectForKey:@"thumbPath"]]placeholderImage:[UIImage imageNamed:@"noImageIcon.jpg"]];
+        NSString * thumb = [dic objectForKey:@"thumbPath"];
+        NSURL * url = [NSURL URLWithString:thumb];
+        if ([thumb isEqualToString:@""]) {
+            [cell.image setImage:[UIImage imageNamed:@"noImageIcon.jpg"]];
+        }else{
+            [cell.image setImageWithURL:url placeholderImage:[UIImage imageNamed:@"noImageIcon.jpg"]];
+        }
+        
+        if ([[dic objectForKey:@"fromcity"]length]==2) {
+            [cell.fromLable setFrame:CGRectMake(100, 15, 40, 20)];
+            [cell.toLable setFrame:CGRectMake(150, 15, 200, 20)];
+            [cell.LineImage setFrame:CGRectMake(130, 15, 20, 20)];
+        }else{
+            [cell.fromLable setFrame:CGRectMake(100, 15, 60, 20)];
+            [cell.toLable setFrame:CGRectMake(170, 15, 140, 20)];
+            [cell.LineImage setFrame:CGRectMake(150, 15, 20, 20)];
+        }
+        NSString * tocityStr = [dic objectForKey:@"tocity"];
+        NSString * tocityString = nil;
+        if (tocityStr.length>=13) {
+            tocityString = [tocityStr substringToIndex:11];
+            [cell.toLable setText:tocityString];
+        }else{
+            
+            [cell.toLable setText:[dic objectForKey:@"tocity"]];
+        }
+
         [cell.fromLable setText:[dic objectForKey:@"fromcity"]];
-        [cell.toLable setText:[dic objectForKey:@"tocity"]];
         [cell.detailLable setText:[dic objectForKey:@"titleDescribe"]];
         
         NSNumber * number = [dic objectForKey:@"price"];
@@ -685,6 +743,7 @@
     
     if (tableView==_table)
     {
+        [tableView deselectRowAtIndexPath:indexPath  animated:NO];
         DetailViewController * detail = [[DetailViewController alloc]init];
         detail.lineNumber = [[[_collectDic objectForKey:@"data"] objectAtIndex:indexPath.row] objectForKey:@"lineId"];
         detail.isCollect = 1;
@@ -693,6 +752,7 @@
     }
     if (tableView==_makeListTable)
     {
+        [tableView deselectRowAtIndexPath:indexPath  animated:NO];
         NSString * orderId =[[[_makeThing objectForKey:@"data"]objectAtIndex:indexPath.row] objectForKey:@"id"];
         NSDictionary * dic = [NSDictionary dictionaryWithObjectsAndKeys:orderId,@"order", nil];
         [[NSNotificationCenter defaultCenter]postNotificationName:@"nicai" object:nil userInfo:dic];

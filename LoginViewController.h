@@ -11,17 +11,21 @@
 #import <ShareSDK/ShareSDK.h>
 #import "ForgetPassViewController.h"
 #import <TencentOpenAPI/TencentOAuth.h>
+#import "SinaEmailViewController.h"
+#import "WXApi.h"
 
 #import "CustomTextField.h"
 
-@class MadeOfMeViewController;
 
-@interface LoginViewController : UIViewController<UITextFieldDelegate>
+@interface LoginViewController : UIViewController<UITextFieldDelegate,TencentSessionDelegate,TencentLoginDelegate,WXApiDelegate>
 {
      CustomTextField * zhText;
      CustomTextField * mmText;
     
 }
+@property (nonatomic,strong) NSString * openId;
+@property (nonatomic,strong) NSString * token;
+@property (nonatomic,strong) NSString * nickName;
+@property (nonatomic,strong) NSString * myImage;
 
 @end
-

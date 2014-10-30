@@ -42,12 +42,15 @@
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
     self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"保存" style:UIBarButtonItemStylePlain target:self action:@selector(saveAction)];
     self.navigationItem.rightBarButtonItem.tintColor = [UIColor whiteColor];
@@ -56,24 +59,8 @@
 
 -(void)backActon{
     
-    [self dismissViewControllerAnimated:YES completion:^{
-        
-    }];
-    
-}
-
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
+    [_field resignFirstResponder];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 -(void)saveAction{
@@ -89,9 +76,9 @@
     NSString * type = @"qualification";
     NSString * value = _field.text;
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",memberId,timeString,type,value,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     NSString * string  = [value stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
     
@@ -100,12 +87,12 @@
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
     type = [NSString stringWithFormat:@"%@=%@%@",@"type",type,@"&"];
     value = [NSString stringWithFormat:@"%@=%@%@",@"value",string,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kReviseUrl,time,type,value];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kReviseUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,type,value];
     
     NSString * finallyUrl = [NSString stringWithFormat:@"%@%@",lastUrl,memberId];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",finallyUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         
@@ -125,7 +112,7 @@
     
     self.field = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 150)];
     [_field setFont:[UIFont systemFontOfSize:14]];
-    _field.layer.borderWidth = 1;
+    _field.layer.borderWidth = 0.5;
     _field.layer.borderColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.2].CGColor;
     [_field setTextColor:[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1]];
     _field.delegate = self;
@@ -143,12 +130,8 @@
     {
         if ([aString length] > 50) {
             textView.text = [aString substringToIndex:50];
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil
-                                                            message:@"超过最大字数不能输入了"
-                                                           delegate:nil
-                                                  cancelButtonTitle:@"Ok"
-                                                  otherButtonTitles:nil, nil];
-            [alert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"超过最大字数不能输入了" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
             return NO;
         }
     }
@@ -156,6 +139,11 @@
     
     
 }
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+    
+    [_field resignFirstResponder];
+}
+
 
 
 - (void)didReceiveMemoryWarning

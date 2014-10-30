@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SuggestionViewController : UIViewController<UITextViewDelegate,UIAlertViewDelegate>
+@interface SuggestionViewController : UIViewController<UITextFieldDelegate,UIActionSheetDelegate>
 
 @property (nonatomic, strong) NSString * titleName;
 @property (nonatomic, strong) UITextView * field;

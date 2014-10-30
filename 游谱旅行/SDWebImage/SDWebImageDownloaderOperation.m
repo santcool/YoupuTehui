@@ -27,14 +27,17 @@
 #if TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_4_0
 @property (assign, nonatomic) UIBackgroundTaskIdentifier backgroundTaskId;
 #endif
-
 @end
+
 
 @implementation SDWebImageDownloaderOperation {
     size_t width, height;
     UIImageOrientation orientation;
     BOOL responseFromCached;
 }
+
+@synthesize executing = _executing ;
+@synthesize finished = _finished;
 
 - (id)initWithRequest:(NSURLRequest *)request options:(SDWebImageDownloaderOptions)options progress:(void (^)(NSInteger, NSInteger))progressBlock completed:(void (^)(UIImage *, NSData *, NSError *, BOOL))completedBlock cancelled:(void (^)())cancelBlock {
     if ((self = [super init])) {

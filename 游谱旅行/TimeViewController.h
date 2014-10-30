@@ -15,6 +15,8 @@
 @property (nonatomic,strong) NSMutableDictionary * timeDic;
 @property (nonatomic,strong) UITableView * timeTable;
 @property (nonatomic, strong) NSString * titleStr;//判断首页button标题
+@property (nonatomic, strong) NSString * timeValue;
+@property (nonatomic, strong) NSMutableArray * timeArray;
 
 @property (nonatomic,weak) id<TimeDelegate> delegate;
 +(id)shareSingle;

@@ -33,6 +33,7 @@ static TabBarController * tab = nil;
     if (self) {
         _i =0;
         _prevSelectedIndex = 0;
+        _isOrNo = 3;
     }
     return self;
 }
@@ -49,7 +50,7 @@ static TabBarController * tab = nil;
     self.tabBar.hidden = YES; //隐藏原先的tabBar
     
     CGFloat tabBarViewY = self.view.frame.size.height - 49;
-    self.tabBarView = [[UIImageView alloc] initWithFrame:CGRectMake(0, tabBarViewY, 320, 49)];
+    self.tabBarView = [[UIImageView alloc] initWithFrame:CGRectMake(0, tabBarViewY, self.view.frame.size.width, 49)];
     [_tabBarView setBackgroundColor:[UIColor colorWithRed:53/255.0 green:58/255.0 blue:66/255.0 alpha:1.0f]];//背景颜色
     [_tabBarView setUserInteractionEnabled:YES];//打开用户交互
     
@@ -75,8 +76,7 @@ static TabBarController * tab = nil;
         [_tabBarView addSubview:button];
         
         //默认选中第一个按钮
-        if (i == _i) {
-            button.selected = YES;
+        if (i == 0) {
             [button setFrame:CGRectMake(i+10, 11, 30, 30)];
         }if (i==1) {
             [button setFrame:CGRectMake(i+70, 11, 30, 30)];
@@ -84,12 +84,12 @@ static TabBarController * tab = nil;
         if (i==2) {
             [button setFrame:CGRectMake(x-15, 0, 70, 49)];
         }if (i==3) {
+             button.selected = YES;
             [button setFrame:CGRectMake(x+15, 11, 30, 30)];
         }if (i==4) {
             [button setFrame:CGRectMake(x+10, 11, 30, 30)];
         }
-    }
-}
+    }}
 
 - (void)setSelectedIndex:(NSUInteger)selectedIndex {
     _prevSelectedIndex = self.selectedIndex;
@@ -107,12 +107,20 @@ static TabBarController * tab = nil;
 {
     _prevSelectedIndex = sender.tag - 100;
     
-    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"] == nil && sender.tag !=103 && sender.tag!=100) {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"] == nil && sender.tag==104) {
         LoginViewController * login = [[LoginViewController alloc] init];
         UINavigationController * na = [[UINavigationController alloc] initWithRootViewController:login];
         [self presentViewController:na animated:NO completion:nil];
     } else {
         self.selectedIndex = sender.tag - 100;
+
+     
+    }
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"] == nil && sender.tag==103) {
+        _isOrNo = 3;
+    }
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"] == nil && sender.tag==100) {
+        _isOrNo = 1;
     }
 }
 

@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ForgetPassViewController : UIViewController<UIAlertViewDelegate>
+@interface ForgetPassViewController : UIViewController<UIActionSheetDelegate>
 
 @property (nonatomic, strong) UITextField * field;
 @property (nonatomic, strong) UITextField * yanzhengField;

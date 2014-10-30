@@ -47,17 +47,12 @@ static SexViewController * sexView = nil;
     return self;
 }
 
--(void)viewWillAppear:(BOOL)animated{
-    
-    
-    [self qzy];
-    
-}
-
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view
+    
+    [self qzy];
     [self qzyTableView];
 }
 
@@ -69,21 +64,21 @@ static SexViewController * sexView = nil;
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
-    self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
+    self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];;
     
 }
 
 -(void)backActon{
     
-    [self dismissViewControllerAnimated:YES completion:^{
-        
-    }];
-    
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 -(void)setExtraCellLineHidden: (UITableView *)tableView
@@ -93,30 +88,13 @@ static SexViewController * sexView = nil;
     [tableView setTableFooterView:view];
 }
 
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
-}
-
 -(void)qzyTableView{
     
     UILabel * aLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 20)];
+    aLable.layer.borderColor = [UIColor colorWithRed:204/255.0 green:204/255.0 blue:204/255.0 alpha:1].CGColor;
+    aLable.layer.borderWidth = 0.5;
     [self.view addSubview:aLable];
-    
-    CALayer * yyy = [CALayer layer];
-    yyy.frame = CGRectMake(0, 19, 320, 1);
-    yyy.backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.15].CGColor;
-    [aLable.layer addSublayer:yyy];
-    
+ 
     self.sexTable = [[UITableView alloc] initWithFrame:CGRectMake(0, 20, self.view.frame.size.width, 132) style:UITableViewStylePlain];
     _sexTable.delegate = self;
     _sexTable.dataSource = self;
@@ -165,21 +143,21 @@ static SexViewController * sexView = nil;
     NSString * type = @"gender";
     NSString * value = [[_sexArray objectAtIndex:indexPath.row] objectForKey:@"gender"];
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",memberId,timeString,type,value,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
     type = [NSString stringWithFormat:@"%@=%@%@",@"type",type,@"&"];
     value = [NSString stringWithFormat:@"%@=%@%@",@"value",value,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kReviseUrl,time,type,value];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kReviseUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,type,value];
     
     NSString * finallyUrl = [NSString stringWithFormat:@"%@%@",lastUrl,memberId];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",finallyUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         

@@ -20,7 +20,7 @@
 #import "PersonalCenterViewController.h"
 #import "FromCityViewController.h"
 
-@interface AddViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,UIAlertViewDelegate,fromCityDelegate,SeveralDelegate,withDelegate,PreferenceDelegate,toCityDelegate,PirceDelegate,TravelsDelegate,MonthsDelegate>
+@interface AddViewController : UIViewController<UITableViewDataSource,UITableViewDelegate,fromCityDelegate,SeveralDelegate,withDelegate,PreferenceDelegate,toCityDelegate,PirceDelegate,TravelsDelegate,MonthsDelegate,UIActionSheetDelegate,UIAlertViewDelegate>
 {
     BOOL abc;
 }
@@ -40,6 +40,8 @@
 @property (nonatomic, strong) NSString * travelStr;
 @property (nonatomic, strong) NSString * timeStr;
 @property (nonatomic, strong) NSString * cityName;
+@property (nonatomic, strong) NSString * left;
+@property (nonatomic, strong) NSString * right;
 
 @property (nonatomic, strong) NSString * mameId;
 @property (nonatomic, strong) NSString * togetherId;

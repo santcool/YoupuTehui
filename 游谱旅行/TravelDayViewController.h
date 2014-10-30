@@ -15,6 +15,7 @@
 @property (nonatomic,strong) NSMutableDictionary * travelDic;
 @property (nonatomic,strong) UITableView * travelTable;
 @property (nonatomic, strong) NSString * titleStr;//判断首页button标题
+@property (nonatomic, strong) NSString * travelValue;
 
 @property (nonatomic,weak) id<TravelDelegate> delegate;
 +(id)shareSingle;

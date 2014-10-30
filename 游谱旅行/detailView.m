@@ -7,9 +7,9 @@
 //
 
 #import "detailView.h"
-#import "MainViewController.h"
+#import "FirstViewController.h"
 
-#define BAR_COLOR [UIColor colorWithRed:224/255.0 green:89/255.0 blue:70/255.0 alpha:1]
+#define BAR_COLOR [UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]
 
 @implementation detailView
 
@@ -20,28 +20,28 @@
         // Initialization code
         
         [self setBackgroundColor:BAR_COLOR];
-        [self setFrame:CGRectMake(0, 0, 320, 64)];
+        [self setFrame:CGRectMake(0, 0, [UIScreen mainScreen].bounds.size.width, 64)];
         
-        self.button = [[UIButton alloc]initWithFrame:CGRectMake(10, 20, 70, 40)];
+        self.button = [[UIButton alloc]initWithFrame:CGRectMake(0, 20, 70, 40)];
         [self addSubview:_button];
-        self.backImage = [[TouchImage alloc] initWithFrame:CGRectMake(0, 10, 30, 30)];
+        self.backImage = [[TouchImage alloc] initWithFrame:CGRectMake(10, 7, 30, 30)];
         [_button addSubview:_backImage];
         
-        self.lable = [[UILabel alloc] initWithFrame:CGRectMake(120, 30, 80, 30)];
+        self.lable = [[UILabel alloc] initWithFrame:CGRectMake(120, 27, 80, 30)];
         [_lable setText:@"特惠详情"];
         [_lable setTextColor:[UIColor whiteColor]];
-        [_lable setFont:[UIFont systemFontOfSize:16]];
+        [_lable setFont:[UIFont systemFontOfSize:18]];
         [self addSubview:_lable];
         
-        UIButton * fenxiang = [[UIButton alloc]initWithFrame:CGRectMake(270, 30, 40, 30)];
-        [self addSubview:fenxiang];
-        self.image = [[TouchImage alloc] initWithFrame:CGRectMake(5, 0,  30, 30)];
-        [fenxiang addSubview:_image];
+        self.fenxiang = [[UIButton alloc]initWithFrame:CGRectMake(270, 7, 50, 50)];
+        [self addSubview:_fenxiang];
+        self.image = [[TouchImage alloc] initWithFrame:CGRectMake(5, 20,  30, 30)];
+        [_fenxiang addSubview:_image];
         
-        UIButton * collect = [[UIButton alloc]initWithFrame:CGRectMake(230, 29, 40, 30)];
-        [self addSubview:collect];
-        self.collectImage = [[TouchImage alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
-        [collect addSubview:_collectImage];
+        self.collect = [[UIButton alloc]initWithFrame:CGRectMake(230, 6, 40, 50)];
+        [self addSubview:_collect];
+        self.collectImage = [[TouchImage alloc] initWithFrame:CGRectMake(0, 19, 30, 30)];
+        [_collect addSubview:_collectImage];
         
         
         

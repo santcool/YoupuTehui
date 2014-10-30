@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "CustomTextField.h"
 
-@interface SignUpViewController : UIViewController<UITextFieldDelegate,UIAlertViewDelegate>
+@interface SignUpViewController : UIViewController<UITextFieldDelegate,UIActionSheetDelegate>
 
 @property (nonatomic, strong) CustomTextField * zhText;
 @property (nonatomic, strong) CustomTextField * yxText;

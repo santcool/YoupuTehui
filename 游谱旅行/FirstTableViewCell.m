@@ -22,18 +22,18 @@
         self.hotImage = [[UIImageView alloc] initWithFrame:CGRectMake(10, 10, 40, 40)];
         [self addSubview:self.hotImage];
         
-        self.fromLable = [[UILabel alloc] initWithFrame:CGRectMake(100, 15, 40, 20)];
+        self.fromLable = [[UILabel alloc] initWithFrame:CGRectMake(100, 15, 60, 20)];
         [self.fromLable setFont:[UIFont systemFontOfSize:16]];
         [_fromLable setTextColor:[UIColor colorWithRed:51/255.0 green:51/255.0 blue:51/255.0 alpha:1]];
         [self addSubview:self.fromLable];
         
-        self.toLable = [[UILabel alloc] initWithFrame:CGRectMake(150, 15, 170,20)];
+        self.toLable = [[UILabel alloc] initWithFrame:CGRectMake(170, 15, 170,20)];
         [self.toLable setFont:[UIFont systemFontOfSize:16]];
         [_toLable setTextColor:[UIColor colorWithRed:51/255.0 green:51/255.0 blue:51/255.0 alpha:1]];
         [self addSubview:self.toLable];
         
    
-        self.LineImage = [[UIImageView alloc] initWithFrame:CGRectMake(130, 15, 20, 20)];
+        self.LineImage = [[UIImageView alloc] initWithFrame:CGRectMake(150, 15, 20, 20)];
         [self.LineImage setImage:[UIImage imageNamed:@"横线"]];
         [self addSubview:self.LineImage];
         

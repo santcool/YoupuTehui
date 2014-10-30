@@ -20,13 +20,15 @@
         [self addSubview:_frontImage];
         
         self.lable = [[UILabel alloc] initWithFrame:CGRectMake(40, 5, 100, 30)];
-        [_lable setFont:[UIFont systemFontOfSize:18]];
+        [_lable setFont:[UIFont fontWithName:@"Helvetica-Oblique" size:16]];
+        
         [self addSubview:_lable];
         
-        self.contentLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 44, 280, 20)];
+        self.contentLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, 54, 280, 20)];
         _contentLabel.font = [UIFont systemFontOfSize:14];
         _contentLabel.lineBreakMode = NSLineBreakByWordWrapping;
         _contentLabel.numberOfLines = 0;
+        _contentLabel.textColor = [UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1];
         [self addSubview:self.contentLabel];
         
         self.jtImage = [[UIImageView alloc]initWithFrame:CGRectMake(260, 10, 20, 20)];

@@ -43,12 +43,15 @@
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
     self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"验证" style:UIBarButtonItemStylePlain target:self action:@selector(saveAction)];
     self.navigationItem.rightBarButtonItem.tintColor = [UIColor whiteColor];
@@ -56,33 +59,18 @@
 
 -(void)backActon{
     
+    [_field resignFirstResponder];
     [self.navigationController popToRootViewControllerAnimated:YES];
-}
-
-
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
 }
 
 -(void)saveAction{
     
     if ([_field.text isEqualToString:@""]) {
-        UIAlertView * alert =[[UIAlertView alloc]initWithTitle:@"提示" message:@"请输入手机号" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-        [alert show];
+        UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"请输入手机号" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+        [sheet showInView:self.view];
     }else if (_field.text.length<11){
-        
-        UIAlertView * alert =[[UIAlertView alloc]initWithTitle:@"提示" message:@"请输入正确的手机号位数" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-        [alert show];
+        UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"请输入正确的手机号位数" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+        [sheet showInView:self.view];
     }
     
      else{
@@ -95,39 +83,36 @@
     NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
     NSString * mobile = self.field.text;
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@",mobile,timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     mobile = [NSString stringWithFormat:@"%@=%@%@",@"mobile",mobile,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@",kForgetUrl,time,mobile];
+         NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kForgetUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@",url,time,mobile];
     
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
         
         NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
         
         if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"4"]) {
-            
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"号码已存在" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [alert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"号码已存在" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
         }else if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"3"]){
-            
-            UIAlertView * qwe =[[UIAlertView alloc]initWithTitle:@"提示" message:@"到达每日发送上限,请24小时后再尝试此操作" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [qwe show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"到达每日发送上限,请24小时后再尝试此操作" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
             
         }else if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"2"]){
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"系统错误" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [alert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"系统错误" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
         }else{
-        
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"恭喜您,手机号尚未被使用" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [alert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"恭喜您,手机号尚未被使用" delegate:self cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
   
         }
         
@@ -135,7 +120,7 @@
     }
 }
 
--(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+-(void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex{
     
     ValidateViewController * vvv = [[ValidateViewController alloc] init];
     vvv.phoneMobile = _field.text;
@@ -145,11 +130,18 @@
 
 -(void)createTextField{
     
-    self.field = [[UITextField alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 50)];
-    [_field setBorderStyle:UITextBorderStyleRoundedRect];
+    UILabel * lable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 20)];
+    [lable setTextColor:[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1]];
+    [lable setFont:[UIFont systemFontOfSize:14]];
+    [self.view addSubview:lable];
+    
+    self.field = [[CustomTextField alloc] initWithFrame:CGRectMake(0, 20, self.view.frame.size.width, 50)];
     [_field setFont:[UIFont systemFontOfSize:14]];
+    _field.layer.borderColor = [UIColor colorWithRed:204/255.0 green:204/255.0 blue:204/255.0 alpha:1].CGColor;
+    _field.layer.borderWidth = 0.5;
     _field.delegate = self;
     [_field setTextColor:[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1]];
+    [_field setBackgroundColor:[UIColor whiteColor]];
     [_field setText:_nowNumber];
     [self.view addSubview:_field];
     
@@ -161,12 +153,9 @@
     {
         if ([aString length] >11) {
             textField.text = [aString substringToIndex:11];
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:nil
-                                                            message:@"超过号码最大位数"
-                                                           delegate:nil
-                                                  cancelButtonTitle:@"Ok"
-                                                  otherButtonTitles:nil, nil];
-            [alert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"超过号码最大位数" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
+            
             return NO;
         }
     }
@@ -174,6 +163,11 @@
     
     
 }
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+    
+    [_field resignFirstResponder];
+}
+
 
 - (void)didReceiveMemoryWarning
 {

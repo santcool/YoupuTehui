@@ -15,8 +15,8 @@
         UIDatePicker * _datePicker;
         UIButton * finishButton ;
 }
-@property (nonatomic,strong) UITextField * field;
-@property (nonatomic,strong) UITextField * fields;
+@property (nonatomic,strong) CustomTextField * field;
+@property (nonatomic,strong) CustomTextField * fields;
 
 @property (nonatomic, strong) NSString * name;
 @property (nonatomic, weak) id<birthDelegate> delegate;

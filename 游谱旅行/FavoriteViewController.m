@@ -7,9 +7,11 @@
 //
 
 #import "FavoriteViewController.h"
-#import "FavoriteTableViewCell.h"
 
 @interface FavoriteViewController ()
+{
+    MBProgressHUD * _progressHUD;
+}
 
 @property (strong,nonatomic)NSIndexPath *lastpath;
 
@@ -27,21 +29,18 @@
         
         self.favoriteArr = [[NSMutableArray alloc] init];
         self.favoriteId = [[NSMutableArray alloc] init];
+        self.selectedArr = [NSMutableArray array];
+        
         
     }
     return self;
-}
-
--(void)viewWillAppear:(BOOL)animated{
-    
-    [self qzy];
-    
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    [self qzy];
     
     [self createLable];
     
@@ -49,6 +48,25 @@
     
     [self connect];
 }
+
+-(void)addIndicator
+{
+    _progressHUD = [[MBProgressHUD alloc] initWithView:self.view];
+    [self.view addSubview:_progressHUD];
+    [self.view bringSubviewToFront:_progressHUD];
+    [_progressHUD setMode:MBProgressHUDModeIndeterminate];
+    [_progressHUD setLabelText:@"加载中..."];
+    [_progressHUD showWhileExecuting:@selector(myProgressTask) onTarget:self withObject:nil animated:YES];
+}
+-(void) myProgressTask{
+    float progress = 0.0f;
+    while (progress < 1.0f) {
+        progress -=0.01f;
+        _progressHUD.progress = progress;
+        usleep(50000);
+    }
+}
+
 
 -(void)qzy
 {
@@ -58,12 +76,15 @@
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
     self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
     
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"保存" style:UIBarButtonItemStylePlain target:self action:@selector(saveAction)];
     self.navigationItem.rightBarButtonItem.tintColor = [UIColor whiteColor];
@@ -72,14 +93,11 @@
 
 -(void)backActon{
     
-    [self dismissViewControllerAnimated:YES completion:^{
-        
-    }];
+    [self dismissViewControllerAnimated:YES completion:nil];
     
 }
 
 -(void)saveAction{
-    
     
     _favoriteNow =nil;
     for (int i = 0; i < [_favoriteId count]; i++) {
@@ -102,21 +120,21 @@
     NSString * type = @"travelType";
     NSString * value = _favoriteNow;
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",memberId,timeString,type,value,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
     type = [NSString stringWithFormat:@"%@=%@%@",@"type",type,@"&"];
     value = [NSString stringWithFormat:@"%@=%@%@",@"value",value,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kReviseUrl,time,type,value];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kReviseUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,type,value];
     
     NSString * finallyUrl = [NSString stringWithFormat:@"%@%@",lastUrl,memberId];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",finallyUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         
@@ -130,19 +148,7 @@
     [self dismissViewControllerAnimated:NO completion:nil];
     
 }
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
-}
+
 -(void)connect{
     
     //获取当前时间戳
@@ -153,13 +159,14 @@
     //加密规则
     NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
     NSString * QZY = [NSString stringWithFormat:@"%@%@",timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",kFilterCaseListUrl,time];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kFilterCaseListUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",url,time];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
     
@@ -169,22 +176,21 @@
         
         [_array addObjectsFromArray:[[dic objectForKey:@"data"] objectForKey:@"travelType"]];
         [_table reloadData];
+        [_progressHUD hide:YES];
+        [_progressHUD removeFromSuperViewOnHide];
         
     }];
 }
 
 -(void)createLable{
     
-    UILabel * lable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 320, 40)];
+    UILabel * lable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 40)];
     [lable setText:@"  选择您的旅行偏好,可多选"];
     [lable setTextColor:[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1]];
     [lable setFont:[UIFont systemFontOfSize:12]];
+    lable.layer.borderColor = [UIColor colorWithRed:204/255.0 green:204/255.0 blue:204/255.0 alpha:1].CGColor;
+    lable.layer.borderWidth = 0.5;
     [self.view addSubview:lable];
-    
-    CALayer * yyy = [CALayer layer];
-    yyy.frame = CGRectMake(0, 39, self.view.frame.size.width, 1);
-    yyy.backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.15].CGColor;
-    [lable.layer addSublayer:yyy];
     
 }
 
@@ -201,7 +207,7 @@
     self.table = [[UITableView alloc] initWithFrame:CGRectMake(0, 40, self.view.frame.size.width, self.view.frame.size.height-104) style:UITableViewStylePlain];
     _table.delegate = self;
     _table.dataSource = self;
-    [_table setEditing:YES];
+//    [_table setEditing:YES];
     
     [self lineHidden:_table];
     
@@ -217,9 +223,9 @@
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     
     static NSString * cellIdentify = @"cell";
-    FavoriteTableViewCell * cell  = [tableView dequeueReusableCellWithIdentifier:cellIdentify];
+    UITableViewCell * cell  = [tableView dequeueReusableCellWithIdentifier:cellIdentify];
     if (cell == nil) {
-        cell = [[FavoriteTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentify];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellIdentify];
     }
     
     [cell.textLabel setText:[[_array objectAtIndex:indexPath.row] objectForKey:@"value"]];
@@ -230,7 +236,8 @@
     
 }
 
--(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{ 
+    
     
     NSString * value = [[self.array objectAtIndex:indexPath.row] objectForKey:@"value"];
     NSString * strings= [[self.array objectAtIndex:indexPath.row] objectForKey:@"id"];
@@ -238,6 +245,16 @@
     [self.favoriteId addObject:strings];
 
 }
+-(void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath{
+    
+    NSString * value = [[self.array objectAtIndex:indexPath.row] objectForKey:@"value"];
+    NSString * strings= [[self.array objectAtIndex:indexPath.row] objectForKey:@"id"];
+    [self.favoriteArr removeObject:value];
+    [self.favoriteId removeObject:strings];
+    
+}
+
+
 
 -(UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath{
     

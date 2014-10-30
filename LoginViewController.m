@@ -7,15 +7,21 @@
 //
 
 #import "LoginViewController.h"
-#import "MainViewController.h"
+#import "FirstViewController.h"
 #import "EmailViewController.h"
 #import "SinaEmailViewController.h"
+#import "WeiXinViewController.h"
 
 #import "MiPushSDK.h"
 
 #import <ShareSDK/ISSPlatformUser.h>
 
 @interface LoginViewController ()
+{
+     TencentOAuth * _tencentOAuth;
+    NSArray *   _permissions;
+}
+
 @end
 
 @implementation LoginViewController
@@ -26,6 +32,8 @@
     if (self) {
         // Custom initialization
         
+        [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(getWeiXinMessage:) name:@"weixin" object:nil];
+
     }
     return self;
 }
@@ -48,20 +56,32 @@
     self.title = @"登录游谱账号";
     [self.navigationController.navigationBar setTranslucent:NO];
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
+    
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"注册" style:UIBarButtonItemStyleDone target:self action:@selector(returnToLast)];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
     self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
     self.navigationItem.rightBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
 }
 
 -(void)backActon{
-    [self dismissViewControllerAnimated:YES completion:nil];
+    
+    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+    if ((appDelegate.tab.selectedIndex==1 || appDelegate.tab.selectedIndex==2) && (appDelegate.tab.isOrNo==1 || appDelegate.tab.isOrNo==0)) {
+        
+        appDelegate.tab.selectedIndex = 0;
+    }if ((appDelegate.tab.selectedIndex==1 || appDelegate.tab.selectedIndex==2) && appDelegate.tab.isOrNo==3) {
+        appDelegate.tab.selectedIndex = 3;
+    }
+    [self dismissViewControllerAnimated:NO completion:nil];
 }
 
 -(void)returnToLast{
@@ -135,20 +155,6 @@
     [self.view addSubview:login];
 }
 
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
-}
-
 -(void)forgetMima{
     
     ForgetPassViewController * forget = [[ForgetPassViewController alloc] init];
@@ -162,12 +168,16 @@
 -(void)login{
     
     if ([zhText.text isEqualToString:@""] && [mmText.text isEqualToString:@""]) {
-        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"提示" message:@"请输入账号和密码" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-        [alert show];
+        UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"请输入账号和密码" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+        [sheet showInView:self.view];
     }else if ([zhText.text isEqualToString:@""] || [mmText.text isEqualToString:@""]){
-        UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"提示" message:@"请输入账号或密码" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-        [alert show];
+        UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"请输入账号或密码" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+        [sheet showInView:self.view];
     }else{
+    
+        if([zhText.text rangeOfString:@" "].location !=NSNotFound){
+            zhText.text = [zhText.text stringByReplacingOccurrencesOfString:@" " withString:@""];
+        }
     //获取当前时间戳
     NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
     NSTimeInterval a=[dat timeIntervalSince1970];
@@ -183,37 +193,40 @@
     NSString * password = single.passWord;
     NSString * phoneType = @"ios";
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",password,phoneType,timeString,username,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     username = [NSString stringWithFormat:@"%@=%@%@",@"username",username,@"&"];
     password = [NSString stringWithFormat:@"%@=%@%@",@"password",password,@"&"];
     phoneType = [NSString stringWithFormat:@"%@=%@%@",@"phoneType",phoneType,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@",kLoginUrl,time,username,password,phoneType];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kLoginUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@",url,time,username,password,phoneType];
     
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
         
         NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
         
         if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"2"]) {
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"温馨提示" message:@"您输入的账号格式有误" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [alert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"您输入的账号格式有误" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
         }else if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"3"]) {
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"温馨提示" message:@"您输入的账号或密码错误" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [alert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"您输入的账号或密码错误" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
         }else{
             
             NSDictionary * memberDic = [dic objectForKey:@"data"];
             NSString * member = [memberDic objectForKey:@"memberId"];
             [[NSUserDefaults standardUserDefaults]setObject:member forKey:@"memberId"];
             [[NSUserDefaults standardUserDefaults] synchronize];
+            
+            [[EaseMob sharedInstance].chatManager registerNewAccount:member password:@"111111" error:nil];
+            [[EaseMob sharedInstance].chatManager loginWithUsername:member password:@"111111" error:nil];
             
             AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
             appDelegate.tab.selectedIndex = appDelegate.tab.prevSelectedIndex;
@@ -236,13 +249,13 @@
 #pragma mark -联合登陆
 -(void)qqAndSina{
     
-    UILabel * lable = [[UILabel alloc] initWithFrame:CGRectMake(30, self.view.frame.size.height-322,100, 30)];
+    UILabel * lable = [[UILabel alloc] initWithFrame:CGRectMake(30, 256,100, 30)];
     [lable setText:@"其他方式登录"];
     [lable setTextColor:[UIColor blackColor]];
     [lable setFont:[UIFont systemFontOfSize:12]];
     [self.view addSubview:lable];
     
-    UIButton * buttons = [[UIButton alloc]initWithFrame:CGRectMake(40, self.view.frame.size.height-283, 80, 120)];
+    UIButton * buttons = [[UIButton alloc]initWithFrame:CGRectMake(10, 296, 80, 120)];
     [buttons addTarget:self action:@selector(QQLogin) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:buttons];
     
@@ -258,7 +271,7 @@
     [qqLable setFont:[UIFont systemFontOfSize:14]];
     [buttons addSubview:qqLable];
     
-    UIButton * buttonss = [[UIButton alloc]initWithFrame:CGRectMake(180, self.view.frame.size.height-283, 50, 80)];
+    UIButton * buttonss = [[UIButton alloc]initWithFrame:CGRectMake(230, 296, 50, 80)];
     [buttonss addTarget:self action:@selector(sinaLogin) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:buttonss];
     
@@ -275,6 +288,22 @@
     [sinaLable setFont:[UIFont systemFontOfSize:14]];
     [buttonss addSubview:sinaLable];
     
+    UIButton * weixin = [[UIButton alloc]initWithFrame:CGRectMake(120, 296, 50, 80)];
+    [buttonss addTarget:self action:@selector(weixinLogin) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:weixin];
+    
+    UIButton * weixinImage = [[UIButton alloc] initWithFrame:CGRectMake(25, 0, 30, 30)];
+    [weixinImage setUserInteractionEnabled:YES];
+    [weixinImage addTarget:self action:@selector(weixinLogin) forControlEvents:UIControlEventTouchUpInside];
+    [weixinImage setImage:[UIImage imageNamed:@"icon_weixin"] forState:UIControlStateNormal];
+    
+    [weixin addSubview:weixinImage];
+    
+    UILabel *weixinText =[[UILabel alloc] initWithFrame:CGRectMake(28, 39, 80, 20)];
+    [weixinText setText:@"微信"];
+    [weixinText setTextColor:[UIColor colorWithRed:51/255.0 green:51/255.0 blue:51/255.0 alpha:1]];
+    [weixinText setFont:[UIFont systemFontOfSize:14]];
+    [weixin addSubview:weixinText];
     
 }
 
@@ -282,68 +311,182 @@
 #pragma mark ----------------qq联合登陆
 -(void)QQLogin
 {
-    [ShareSDK getUserInfoWithType:ShareTypeQQSpace authOptions:nil result:^(BOOL result, id<ISSPlatformUser> userInfo, id<ICMErrorInfo> error) {
-    if (result) {
+    _tencentOAuth = [[TencentOAuth alloc]initWithAppId:@"101118214" andDelegate:self];
+    _permissions =  [NSArray arrayWithObjects:@"get_user_info", @"add_t", nil];
+    [_tencentOAuth authorize:_permissions inSafari:NO];
+    
+}
+#pragma mark
+#pragma mark ---------------登陆成功回调方法
+-(void)tencentDidLogin{
 
-        id<ISSPlatformCredential> credential = [ShareSDK getCredentialWithType:ShareTypeQQSpace];
+    NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
+    NSTimeInterval a=[dat timeIntervalSince1970];
+    NSString *timeString = [NSString stringWithFormat:@"%.f", a];
 
-        [[NSUserDefaults standardUserDefaults] setObject:[credential uid] forKey:@"credential"];
-        [[NSUserDefaults standardUserDefaults]synchronize];
-        
-        //获取当前时间戳
-        NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
-        NSTimeInterval a=[dat timeIntervalSince1970];
-        NSString *timeString = [NSString stringWithFormat:@"%.f", a];
-        
-        //加密规则
-        NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
-        NSString * unionType = @"qq";
-        NSString * unionUserId = [credential uid];
-        NSString * from = @"iosApp";
-        NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",from,timeString,unionType,unionUserId,key];
-        NSString * qzy = [self md5:QZY];
-        NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-        NSString * qaz = [self md5:qwe];
-        
-        //接口拼接
-        NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
-        unionType = [NSString stringWithFormat:@"%@=%@%@",@"unionType",unionType,@"&"];
-        unionUserId = [NSString stringWithFormat:@"%@=%@%@",@"unionUserId",unionUserId,@"&"];
-        from = [NSString stringWithFormat:@"%@=%@%@",@"from",from,@"&"];
-        NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@",kQQLoginUrl,time,unionType,unionUserId,from];
-        
-        NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
-        NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-        NSLog(@"%@",finally);
-        
-        [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
-            
-        NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
-        NSLog(@"%@",dic);
-        
+    //加密规则
+    NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
+    NSString * unionType = @"qq";
+    NSString * unionUserId = [_tencentOAuth openId];
+    NSString * from = @"iosApp";
+    NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",from,timeString,unionType,unionUserId,key];
+    NSString * qzy = [TeHuiModel md5:QZY];
+    NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
+    NSString * qaz = [TeHuiModel md5:qwe];
+
+    //接口拼接
+    NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
+    unionType = [NSString stringWithFormat:@"%@=%@%@",@"unionType",unionType,@"&"];
+    unionUserId = [NSString stringWithFormat:@"%@=%@%@",@"unionUserId",unionUserId,@"&"];
+    from = [NSString stringWithFormat:@"%@=%@%@",@"from",from,@"&"];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kQQLoginUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@",url,time,unionType,unionUserId,from];
+
+    NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
+    NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
+
+    [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
+
+    NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
         if ([[[dic objectForKey:@"data"] objectForKey:@"email"]isEqualToString:@""]) {
             
+            [[NSUserDefaults standardUserDefaults]setObject:[_tencentOAuth openId] forKey:@"credential"];
+            [[NSUserDefaults standardUserDefaults]synchronize];
+            
             EmailViewController * sign = [[EmailViewController alloc]init];
-            sign.nickName = [userInfo nickname];
-            sign.gender = [NSString stringWithFormat:@"%d",[userInfo gender]];
-            sign.userIcon = [userInfo profileImage];
-            UINavigationController * na = [[UINavigationController alloc]initWithRootViewController:sign];
-            [self presentViewController:na animated:NO completion:nil];
+            sign.nickName = [[dic objectForKey:@"data"] objectForKey:@"nickName"];
+            sign.gender = [NSString stringWithFormat:@"%@",[[dic objectForKey:@"data"] objectForKey:@"gender"]];
+            sign.userIcon = [[dic objectForKey:@"data"] objectForKey:@"picPath"];
+            [self.navigationController pushViewController:sign animated:NO];
             
         }else{
             
             [[NSUserDefaults standardUserDefaults] setObject:[[dic objectForKey:@"data"]objectForKey:@"memberId"] forKey:@"memberId"];
             [[NSUserDefaults standardUserDefaults] synchronize];
             
+            [[EaseMob sharedInstance].chatManager registerNewAccount:[[dic objectForKey:@"data"]objectForKey:@"memberId"] password:@"111111" error:nil];
+            [[EaseMob sharedInstance].chatManager loginWithUsername:[[dic objectForKey:@"data"]objectForKey:@"memberId"] password:@"111111" error:nil];
+            
             AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-            appDelegate.tab.selectedIndex = 0;
+            appDelegate.tab.selectedIndex = appDelegate.tab.prevSelectedIndex;
             [self dismissViewControllerAnimated:YES completion:nil];
             
-            }
-       }];
-     }
-  }];
+        }
+
+    }];
+
+}
+-(void)tencentDidNotLogin:(BOOL)cancelled{
+    NSLog(@"notLogin");
     
+}
+-(void)tencentDidNotNetWork{
+   
+}
+
+-(void)tencentDidLogout{
+    
+}
+#pragma mark
+#pragma mark -----------------------微信登陆(构造SendAuthReq结构体,向微信终端发送这个结构体)
+-(void)weixinLogin{
+    
+    SendAuthReq* req =[[SendAuthReq alloc ] init];
+    req.scope = @"snsapi_userinfo,snsapi_base";
+    req.state = @"741" ;
+    [WXApi sendReq:req];
+}
+
+#pragma mark 
+#pragma mark -----------------------通过(WXApiDelegate协议方法)成功获取code后回传,进而获取用户唯一标识.
+-(void)getWeiXinMessage:(NSNotification *)noti{
+    
+    NSString *url =[NSString stringWithFormat:@"https://api.weixin.qq.com/sns/oauth2/access_token?appid=%@&secret=%@&code=%@&grant_type=authorization_code",@"wx794b9db8253ca0a1",@"6ad5ceda00de0bc44cecdeca959e9b42",[[noti userInfo] objectForKey:@"codeQ"]];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSURL *zoneUrl = [NSURL URLWithString:url];
+        NSString *zoneStr = [NSString stringWithContentsOfURL:zoneUrl encoding:NSUTF8StringEncoding error:nil];
+        NSData *data = [zoneStr dataUsingEncoding:NSUTF8StringEncoding];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (data) {
+                NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+                
+                self.openId = [dic objectForKey:@"openid"];
+                self.token = [dic objectForKey:@"access_token"];
+                NSString *url =[NSString stringWithFormat:@"https://api.weixin.qq.com/sns/userinfo?access_token=%@&openid=%@",self.token,self.openId];
+                
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    NSURL *zoneUrl = [NSURL URLWithString:url];
+                    NSString *zoneStr = [NSString stringWithContentsOfURL:zoneUrl encoding:NSUTF8StringEncoding error:nil];
+                    NSData *data = [zoneStr dataUsingEncoding:NSUTF8StringEncoding];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (data) {
+                            NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+                            
+                            self.nickName = [dic objectForKey:@"nickname"];
+                            self.myImage = [dic objectForKey:@"headimgurl"];
+                            
+                            NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
+                            NSTimeInterval a=[dat timeIntervalSince1970];
+                            NSString *timeString = [NSString stringWithFormat:@"%.f", a];
+                            
+                            //加密规则
+                            NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
+                            NSString * unionType = @"weixin";
+                            NSString * unionUserId = _openId;
+                            NSString * from = @"iosApp";
+                            NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",from,timeString,unionType,unionUserId,key];
+                            NSString * qzy = [TeHuiModel md5:QZY];
+                            NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
+                            NSString * qaz = [TeHuiModel md5:qwe];
+                            
+                            //接口拼接
+                            NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
+                            unionType = [NSString stringWithFormat:@"%@=%@%@",@"unionType",unionType,@"&"];
+                            unionUserId = [NSString stringWithFormat:@"%@=%@%@",@"unionUserId",unionUserId,@"&"];
+                            from = [NSString stringWithFormat:@"%@=%@%@",@"from",from,@"&"];
+                            NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kQQLoginUrl];
+                            NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@",url,time,unionType,unionUserId,from];
+                            
+                            NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
+                            NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
+                            
+                            [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
+                                
+                                NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
+                                if ([[[dic objectForKey:@"data"] objectForKey:@"email"]isEqualToString:@""]) {
+                                    
+                                    [[NSUserDefaults standardUserDefaults]setObject:_openId forKey:@"credential"];
+                                    [[NSUserDefaults standardUserDefaults]synchronize];
+                                    
+                                    WeiXinViewController * sign = [[WeiXinViewController alloc]init];
+                                    sign.nickName =_nickName;
+                                    sign.gender = [NSString stringWithFormat:@"%@",[[dic objectForKey:@"data"] objectForKey:@"gender"]];
+                                    sign.userIcon =_myImage;
+                                    [self.navigationController pushViewController:sign animated:NO];
+                                    
+                                }else{
+                                    
+                                    [[NSUserDefaults standardUserDefaults] setObject:[[dic objectForKey:@"data"]objectForKey:@"memberId"] forKey:@"memberId"];
+                                    [[NSUserDefaults standardUserDefaults] synchronize];
+                                    
+                                    [[EaseMob sharedInstance].chatManager registerNewAccount:[[dic objectForKey:@"data"]objectForKey:@"memberId"] password:@"111111" error:nil];
+                                    [[EaseMob sharedInstance].chatManager loginWithUsername:[[dic objectForKey:@"data"]objectForKey:@"memberId"] password:@"111111" error:nil];
+                                    
+                                    AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
+                                    appDelegate.tab.selectedIndex = appDelegate.tab.prevSelectedIndex;
+                                    [self dismissViewControllerAnimated:YES completion:nil];
+                                    
+                                }
+                                
+                            }];
+                        }
+                    });
+                    
+                });
+            }
+        });
+    });
 }
 
 #pragma mark
@@ -369,20 +512,20 @@
         NSString * unionUserId = [credential uid];
         NSString * from = @"iosApp";
         NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@%@",from,timeString,unionType,unionUserId,key];
-        NSString * qzy = [self md5:QZY];
+        NSString * qzy = [TeHuiModel md5:QZY];
         NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-        NSString * qaz = [self md5:qwe];
+        NSString * qaz = [TeHuiModel md5:qwe];
         
         //接口拼接
         NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
         unionType = [NSString stringWithFormat:@"%@=%@%@",@"unionType",unionType,@"&"];
         unionUserId = [NSString stringWithFormat:@"%@=%@%@",@"unionUserId",unionUserId,@"&"];
         from = [NSString stringWithFormat:@"%@=%@%@",@"from",from,@"&"];
-        NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@",kQQLoginUrl,time,unionType,unionUserId,from];
+        NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kQQLoginUrl];
+        NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@%@",url,time,unionType,unionUserId,from];
         
         NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
         NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-        NSLog(@"%@",finally);
         
         [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
             
@@ -394,27 +537,35 @@
                 sign.gender = [NSString stringWithFormat:@"%d",[userInfo gender]];
                 sign.userIcon = [userInfo profileImage];
                 sign.memberId = [[dic objectForKey:@"data"]objectForKey:@"memberId"];
-                UINavigationController * na = [[UINavigationController alloc]initWithRootViewController:sign];
-                [self presentViewController:na animated:NO completion:nil];
+                [self.navigationController pushViewController:sign animated:NO];
                 
                 
             }else{
                 
                 [[NSUserDefaults standardUserDefaults] setObject:[[dic objectForKey:@"data"]objectForKey:@"memberId"] forKey:@"memberId"];
                 [[NSUserDefaults standardUserDefaults] synchronize];
+                
+                [[EaseMob sharedInstance].chatManager registerNewAccount:[[dic objectForKey:@"data"]objectForKey:@"memberId"] password:@"111111" error:nil];
+                [[EaseMob sharedInstance].chatManager loginWithUsername:[[dic objectForKey:@"data"]objectForKey:@"memberId"] password:@"111111" error:nil];
+                
                 AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-                appDelegate.tab.selectedIndex = 0;
+                appDelegate.tab.selectedIndex = appDelegate.tab.prevSelectedIndex;
                 [self dismissViewControllerAnimated:YES completion:nil];
             }
         }];
     }
+    else{
+        NSLog(@"%@",[error errorDescription]);
+    }
 }];
-
-    
 
 }
 
-
+-(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+    
+    [zhText resignFirstResponder];
+    [mmText resignFirstResponder];
+}
 
 
 - (void)didReceiveMemoryWarning

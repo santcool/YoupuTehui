@@ -8,7 +8,6 @@
 
 #import "AppDelegate.h"
 
-
 @implementation AppDelegate
 
 @synthesize managedObjectContext = _managedObjectContext;
@@ -21,61 +20,105 @@
     // Override point for customization after application launch.
     self.window.backgroundColor = [UIColor whiteColor];
     
-    [[UIApplication sharedApplication] registerForRemoteNotificationTypes:UIRemoteNotificationTypeBadge | UIRemoteNotificationTypeSound | UIRemoteNotificationTypeAlert];
-     [[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
-    //注册
-    [MiPushSDK registerMiPush:self];
-    
-    [ShareSDK registerApp:@"2e9c8aa076c6"];
-    [self initializePlat];
-    [self dingwei];
-    
-    
-    MainViewController *main = [[MainViewController alloc]init];
-    MadeOfMeViewController * made = [[MadeOfMeViewController alloc] init];
-    AddViewController *add = [[AddViewController alloc] init];
-    MaxOutViewController *max = [[MaxOutViewController alloc] init];
-    PersonalCenterViewController *person = [[PersonalCenterViewController alloc] init];
-    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:main];
-    [nav setNavigationBarHidden:YES];
-    UINavigationController *navi = [[UINavigationController alloc] initWithRootViewController:made];
-    UINavigationController *naviga = [[UINavigationController alloc] initWithRootViewController:add];
-    UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:max];
-    UINavigationController *navigationqzy = [[UINavigationController alloc] initWithRootViewController:person];
-    
-    
-    self.tab= [[TabBarController alloc] init];
-    NSArray *arr = [NSArray arrayWithObjects:nav,navi,naviga,navigation,navigationqzy, nil];
-
-    [_tab setViewControllers:arr];
-    [_tab createButtons];
-    [_window setRootViewController:_tab];
-    
-    [application setStatusBarHidden:NO];
-    
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
-    
-    [self.window makeKeyAndVisible];
-    return YES;
-}
-
--(void)dingwei{
-    
-    if ([CLLocationManager locationServicesEnabled] == YES) {
+    if ([[UIApplication sharedApplication] respondsToSelector:@selector(registerForRemoteNotifications)]) {
         
-        _locationManager = [[CLLocationManager alloc] init];//创建位置管理器
-        _locationManager.delegate=self;
-        _locationManager.desiredAccuracy=kCLLocationAccuracyBest;
-        _locationManager.distanceFilter=1000.0f;
-        //启动位置更新
-        [_locationManager startUpdatingLocation];
+        [application registerForRemoteNotifications];
+        UIUserNotificationType notificationTypes = UIUserNotificationTypeBadge | UIUserNotificationTypeSound | UIUserNotificationTypeAlert;
+        UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:notificationTypes categories:nil];
+        [application registerUserNotificationSettings:settings];
+    }else{
+        
+        UIRemoteNotificationType notificationTypes = UIRemoteNotificationTypeBadge |
+        UIRemoteNotificationTypeSound |
+        UIRemoteNotificationTypeAlert;
+        [[UIApplication sharedApplication] registerForRemoteNotificationTypes:notificationTypes];
     }
     
+    if ( [UIApplication sharedApplication].applicationIconBadgeNumber>0) {
+        [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+    }
+    
+    
+//    [[EaseMob sharedInstance] registerSDKWithAppKey:@"youputehui#ypth" apnsCertName:@"online"];
+//    [[EaseMob sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
+    
+
+    //注册
+    [MiPushSDK registerMiPush:self];
+    //友盟统计
+    [MobClick startWithAppkey:@"5448e9d0fd98c5aa1900671c" reportPolicy:REALTIME channelId:nil];
+    
+    //微信登陆
+    [WXApi registerApp:@"wx794b9db8253ca0a1"];
+    
+    //shareSDK分享
+    [ShareSDK registerApp:@"2e9c8aa076c6"];
+    [self initializePlat];
+    
+    if (![[NSUserDefaults standardUserDefaults] boolForKey:@"everLaunched"]) {
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"everLaunched"];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"firstLaunch"];
+    }
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"firstLaunch"]) {
+        PrologueViewController *appStartController = [[PrologueViewController alloc] init];
+        self.window.rootViewController = appStartController;
+    }else {
+        
+        FirstViewController *main = [[FirstViewController alloc]init];
+        MadeOfMeViewController * made = [[MadeOfMeViewController alloc] init];
+        AddViewController *add = [[AddViewController alloc] init];
+        MaxOutViewController *max = [[MaxOutViewController alloc] init];
+        PersonalCenterViewController *person = [[PersonalCenterViewController alloc] init];
+        UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:main];
+        [nav setNavigationBarHidden:YES];
+        UINavigationController *navi = [[UINavigationController alloc] initWithRootViewController:made];
+        UINavigationController *naviga = [[UINavigationController alloc] initWithRootViewController:add];
+        UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:max];
+        UINavigationController *navigationqzy = [[UINavigationController alloc] initWithRootViewController:person];
+        
+        
+        self.tab= [[TabBarController alloc] init];
+        NSArray *arr = [NSArray arrayWithObjects:nav,navi,naviga,navigation,navigationqzy, nil];
+
+        [_tab setViewControllers:arr];
+        [_tab createButtons];
+        _tab.selectedIndex = 3;
+        [_window setRootViewController:_tab];
+        
+        [application setStatusBarHidden:NO];
+        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+    }
+    
+    [self.window makeKeyAndVisible];
+    
+    if (launchOptions !=nil) {
+        NSDictionary * dictionary  = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
+        NSString * string = [dictionary objectForKey:@"payload"];
+        NSData * data = [string dataUsingEncoding:NSUTF8StringEncoding];
+        NSDictionary * dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+        if ([[dic objectForKey:@"type"]isEqualToString:@"m"]) {
+            
+            PushViewController * push = [[PushViewController alloc] init];
+            UINavigationController * na = [[UINavigationController alloc] initWithRootViewController:push];
+            self.tab.selectedIndex = self.tab.prevSelectedIndex;
+            [self.tab.selectedViewController presentViewController:na animated:YES completion:nil];
+        }else if ([[dic objectForKey:@"type"]isEqualToString:@"a"]){
+            
+            DetailViewController *detail = [[DetailViewController alloc]init];
+            detail.lineNumber = [dic objectForKey:@"lId"];
+            UINavigationController * na = [[UINavigationController alloc] initWithRootViewController:detail];
+            self.tab.selectedIndex = self.tab.prevSelectedIndex;
+            [self.tab.selectedViewController presentViewController:na animated:YES completion:nil];
+        }
+    }
+
+    return YES;
 }
 
 -(void)initializePlat{
     
-    //QQ空间
+    //QQ空间R
     [ShareSDK connectQZoneWithAppKey:@"101118214" appSecret:@"1aac0ad683fd87c06bfa8165a6e6f446" qqApiInterfaceCls:[QQApiInterface class] tencentOAuthCls:[TencentOAuth class]];
     
     //新浪微博
@@ -85,45 +128,70 @@
     [ShareSDK connectQQWithQZoneAppKey:@"101118214"  qqApiInterfaceCls:[QQApiInterface class] tencentOAuthCls:[TencentOAuth class]];
     
     //微信朋友圈分享
-    [ShareSDK  connectWeChatTimelineWithAppId:@"wx63ec62937ce1018d" wechatCls:[WXApi class]];
+    [ShareSDK  connectWeChatTimelineWithAppId:@"wx794b9db8253ca0a1" wechatCls:[WXApi class]];
     
     //微信好友分享
-    [ShareSDK connectWeChatSessionWithAppId:@"wx63ec62937ce1018d" wechatCls:[WXApi class]];
+    [ShareSDK connectWeChatSessionWithAppId:@"wx794b9db8253ca0a1" wechatCls:[WXApi class]];
     
-} 
-
+}
 
 - (BOOL)application:(UIApplication *)application
       handleOpenURL:(NSURL *)url
 {
-    return [ShareSDK handleOpenURL:url
-                        wxDelegate:self];
-    return [TencentOAuth HandleOpenURL:url];
+    return [TencentOAuth HandleOpenURL:url],[ShareSDK handleOpenURL:url
+                        wxDelegate:self],[WXApi handleOpenURL:url delegate:self];
 }
-
 
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
   sourceApplication:(NSString  *)sourceApplication
          annotation:(id)annotation
 {
-    return [ShareSDK handleOpenURL:url
+    return [TencentOAuth HandleOpenURL:url],[ShareSDK handleOpenURL:url
                  sourceApplication:sourceApplication
                         annotation:annotation
-                        wxDelegate:self];
-    return [TencentOAuth HandleOpenURL:url];
+                                                         wxDelegate:self],[WXApi handleOpenURL:url delegate:self];
+}
+
+- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo{
+    
+    if ([UIApplication  sharedApplication].applicationIconBadgeNumber>0) {
+        
+        [UIApplication sharedApplication].applicationIconBadgeNumber = 0;
+    }
+    
+    NSString * string = [userInfo objectForKey:@"payload"];
+    NSData * data = [string dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary * dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
+    if ([[dic objectForKey:@"type"]isEqualToString:@"m"]) {
+        
+        PushViewController * push = [[PushViewController alloc] init];
+        UINavigationController * na = [[UINavigationController alloc] initWithRootViewController:push];
+        AppDelegate * app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        app.tab.selectedIndex = app.tab.prevSelectedIndex;
+        [app.tab.selectedViewController presentViewController:na animated:YES completion:nil];
+    }else if ([[dic objectForKey:@"type"]isEqualToString:@"a"]){
+        
+        DetailViewController *detail = [[DetailViewController alloc]init];
+        detail.lineNumber = [dic objectForKey:@"lId"];
+        UINavigationController * na = [[UINavigationController alloc] initWithRootViewController:detail];
+        AppDelegate * app = (AppDelegate *)[UIApplication sharedApplication].delegate;
+        app.tab.selectedIndex = app.tab.prevSelectedIndex;
+        [app.tab.selectedViewController presentViewController:na animated:YES completion:nil];
+    }
 }
 
 -(void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken
 {
     [MiPushSDK bindDeviceToken:deviceToken];
     [MiPushSDK setAlias:[[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"]];
-    [MiPushSDK  subscribe:@"ios"];
+    [MiPushSDK subscribe:@"ios"];
+    
 }
 
 -(void)application:(UIApplication *)application didFailToRegisterForRemoteNotificationsWithError:(NSError *)error{
     
-    NSLog(@"%@",error);
+     NSLog(@"error:%@", [error description]);
 }
 
 // 请求成功
@@ -135,10 +203,26 @@
 // 请求失败
 - (void)miPushRequestErrWithSelector:(NSString *)selector error:(int)error data:(NSDictionary *)data
 {
-    NSLog(@"%@",selector);
-    NSLog(@"%@",data);
    
 }
+
+
+//WXApiDelegate
+-(void)onResp:(BaseResp *)resp{
+    
+    SendAuthResp *aresp = (SendAuthResp *)resp;
+    if (aresp.errCode== 0)
+    {
+        NSString *code = aresp.code;
+        NSDictionary *dic = @{@"code":code};
+        NSDictionary * dicc = [NSDictionary dictionaryWithObject:[dic objectForKey:@"code"] forKey:@"codeQ"];
+        [[NSNotificationCenter defaultCenter]postNotificationName:@"weixin" object:nil userInfo:dicc];
+
+        }
+    
+}
+
+
 
 - (void)applicationWillResignActive:(UIApplication *)application
 {
@@ -155,11 +239,16 @@
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
     // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+    
+    
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
 {
     // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+    if (application.applicationIconBadgeNumber>0) {
+        [application setApplicationIconBadgeNumber:0];
+    }
 }
 
 

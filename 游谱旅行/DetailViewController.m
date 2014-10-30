@@ -25,9 +25,10 @@ static DetailViewController *detail = nil;
 {
     NSString *  _isFavorite;
     NSInteger _i;
-    UIActivityIndicatorView * _indicator;//菊花
     UILabel * imageLable;
     NSInteger _k;
+    NSInteger _j;
+    MBProgressHUD * _progressHUD;
 }
 
 @end
@@ -62,6 +63,7 @@ static DetailViewController *detail = nil;
         
         _i=0;
         _k=0;
+        _j=0;
 
     }
     return self;
@@ -76,8 +78,11 @@ static DetailViewController *detail = nil;
         [self isSelecting];
     }
  
-    [self goodTableView];
-    [self detailConncet];
+    if (_j==0) {
+        
+        [self goodTableView];
+        [self detailConncet];
+    }
  
 }
 
@@ -96,16 +101,21 @@ static DetailViewController *detail = nil;
 //添加菊花
 -(void)addIndicator
 {
-    if (!_indicator.isAnimating) {
-        //添加菊花
-        _indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        [_indicator setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.3]];
-        [_indicator setColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
-        [_indicator setFrame:CGRectMake(0,0, self.view.frame.size.width, self.view.frame.size.height)];
-        [_indicator startAnimating];
-        [self.view addSubview:_indicator];
+    _progressHUD = [[MBProgressHUD alloc] initWithView:self.view];
+    [self.view addSubview:_progressHUD];
+    [_progressHUD setMode:MBProgressHUDModeIndeterminate];
+    [_progressHUD setLabelText:@"加载中..."];
+    [_progressHUD showWhileExecuting:@selector(myProgressTask) onTarget:self withObject:nil animated:YES];
+}
+-(void) myProgressTask{
+    float progress = 0.0f;
+    while (progress < 1.0f) {
+        progress -=0.01f;
+        _progressHUD.progress = progress;
+        usleep(50000);
     }
 }
+
 
 -(void)detailView{
     detailView * de = [[detailView alloc]init];
@@ -113,8 +123,10 @@ static DetailViewController *detail = nil;
     [de.button addTarget:self action:@selector(backandback) forControlEvents:UIControlEventTouchUpInside];
     [de.backImage addTarget:self action:@selector(backandback)];
     [de.image setImage:[UIImage imageNamed:@"1"]];
+    [de.fenxiang addTarget:self action:@selector(shareAll) forControlEvents:UIControlEventTouchUpInside];
     [de.image addTarget:self action:@selector(shareAll)];
     [de.collectImage setImage:[UIImage imageNamed:@"收藏"]];
+    [de.collect addTarget:self action:@selector(collectList) forControlEvents:UIControlEventTouchUpInside];
     [de.collectImage addTarget:self action:@selector(collectList)];
     [self.view addSubview:de];
 }
@@ -125,8 +137,10 @@ static DetailViewController *detail = nil;
     [de.button addTarget:self action:@selector(backandback) forControlEvents:UIControlEventTouchUpInside];
     [de.backImage addTarget:self action:@selector(backandback)];
     [de.image setImage:[UIImage imageNamed:@"1"]];
+    [de.fenxiang addTarget:self action:@selector(shareAll) forControlEvents:UIControlEventTouchUpInside];
     [de.image addTarget:self action:@selector(shareAll)];
     [de.collectImage setImage:[UIImage imageNamed:@"收藏成功"]];
+    [de.collect addTarget:self action:@selector(collectList) forControlEvents:UIControlEventTouchUpInside];
     [de.collectImage addTarget:self action:@selector(cancleCollect)];
     [self.view addSubview:de];
 }
@@ -136,6 +150,8 @@ static DetailViewController *detail = nil;
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
+#pragma mark
+#pragma mark -------构造分享内容
 -(void)shareAll{
     
     NSDictionary * dic = [self.detailDic objectForKey:@"data"];
@@ -198,11 +214,12 @@ static DetailViewController *detail = nil;
         [ShareSDK shareContent:[ShareSDK content:sina defaultContent:@"看看啥" image:nil title:@"自由行" url:tehuiDetail description:@"别错过了哟" mediaType:SSPublishContentMediaTypeNews] type:ShareTypeSinaWeibo authOptions:authOptions shareOptions:nil statusBarTips:NO result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end) {
             
             if (state == SSPublishContentStateSuccess) {
-                UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"提示" message:@"成功" delegate:self cancelButtonTitle:@"Cancle" otherButtonTitles:@"确定", nil];
-                [alert show];
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享成功" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
                 
             }else if (state == SSPublishContentStateFail){
-                NSLog(@"笨死啦,分享失败");
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享失败" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
             }
             
         }];
@@ -222,11 +239,11 @@ static DetailViewController *detail = nil;
         [ShareSDK shareContent:[ShareSDK content:titleDes defaultContent:@"" image:shareImage title:fromTo url:tehuiDetail description:@"" mediaType:SSPublishContentMediaTypeNews] type:ShareTypeQQ authOptions:authOptions statusBarTips:NO result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end) {
             
             if (state == SSPublishContentStateSuccess) {
-                NSLog(@"success");
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享成功" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
             }else if (state == SSPublishContentStateFail){
-                NSLog(@"qzy提示你:分享无效,请重试");
-                UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"qzy" message:@"请重试" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定",     nil];
-                [alert show];
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享失败" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
             }
         }];
     }];
@@ -242,12 +259,11 @@ static DetailViewController *detail = nil;
         [ShareSDK shareContent:[ShareSDK content:title defaultContent:@"" image:bigImage title:titleDes url:tehuiDetail description:@"" mediaType:SSPublishContentMediaTypeApp] type:ShareTypeWeixiTimeline authOptions:authOptions statusBarTips:NO result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end) {
             
             if (state == SSPublishContentStateSuccess) {
-                UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"提示" message:@"分享成功" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定",     nil];
-                [alert show];
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享成功" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
             }else if (state == SSPublishContentStateFail){
-                NSLog(@"qzy提示你:分享无效,请重试");
-                UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"qzy" message:@"请重试" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定",     nil];
-                [alert show];
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享失败" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
             }
         }];
     }];
@@ -262,35 +278,30 @@ static DetailViewController *detail = nil;
         NSString * thumb = [dic objectForKey:@"thumbPath"];
         
         id<ISSCAttachment> shareImage =[ShareSDK imageWithUrl:thumb];
-
-        
         
         [ShareSDK shareContent:[ShareSDK content:titleDes defaultContent:@"来自游谱特惠" image:shareImage title:fromTo url:tehuiDetail description:@"" mediaType:SSPublishContentMediaTypeNews] type:ShareTypeWeixiSession authOptions:authOptions statusBarTips:NO result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end) {
             
             if (state == SSPublishContentStateSuccess) {
-                NSLog(@"success");
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享成功" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
             }else if (state == SSPublishContentStateFail){
-                NSLog(@"qzy提示你:分享无效,请重试");
-                UIAlertView * alert = [[UIAlertView alloc] initWithTitle:@"qzy" message:@"请重试" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-                [alert show];
+                UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享失败" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+                [sheet showInView:self.view];
             }
         }];
     }];
-
-    
     //创建自定义分享列表
     NSArray * array = [ShareSDK customShareListWithType:WXfriend,weixin,sina,QQ,qqZone, nil];
     
     [ShareSDK showShareActionSheet:nil shareList:array content:publishContent statusBarTips:NO authOptions:authOptions shareOptions:[ShareSDK  defaultShareOptionsWithTitle:nil oneKeyShareList:[NSArray defaultOneKeyShareList] cameraButtonHidden:NO mentionButtonHidden:NO topicButtonHidden:NO qqButtonHidden:NO wxSessionButtonHidden:NO wxTimelineButtonHidden:NO showKeyboardOnAppear:NO shareViewDelegate:nil friendsViewDelegate:nil picViewerViewDelegate:nil] result:^(ShareType type, SSResponseState state, id<ISSPlatformShareInfo> statusInfo, id<ICMErrorInfo> error, BOOL end){
         
         if (state == SSPublishContentStateSuccess) {
-            NSLog(@"哈哈哈,成功啦");
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享成功" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
         }else if (state == SSPublishContentStateFail){
             
-            NSLog(@"哎 失败");
-            
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"您的网络不给力%>_<%" message:@"网络不给力啊，我们没能帮您分享，网络信号好的时候再来试试吧！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil];
-         [alert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"分享失败" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
             
         }
     }];
@@ -318,27 +329,27 @@ static DetailViewController *detail = nil;
     NSString * lineID = _lineNumber;
     NSString * memberId = [[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@",lineID,memberId,timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     lineID = [NSString stringWithFormat:@"%@=%@%@",@"lineId",lineID,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kCollectUrl,time,lineID,memberId];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kCollectUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,lineID,memberId];
     
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
         
         NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
         
         if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"0"]) {
-            UIAlertView * laert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"收藏成功" delegate:nil cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [laert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"收藏成功" delegate:self cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
             detailView * de = [[detailView alloc]init];;
             [de.collectImage setImage:[UIImage imageNamed:@"收藏成功"]];
             [de.collectImage addTarget:self action:@selector(cancleCollect)];
@@ -351,8 +362,8 @@ static DetailViewController *detail = nil;
         }
         if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"3"]){
             
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"提示" message:@"已经收藏该线路" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [alert show];
+            UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"已经收藏该线路" delegate:nil cancelButtonTitle:@"提示" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+            [sheet showInView:self.view];
             
         }
     }];
@@ -374,24 +385,23 @@ static DetailViewController *detail = nil;
     NSString * lineID = _lineNumber;
     NSString * memberId = [[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@",lineID,memberId,timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     lineID = [NSString stringWithFormat:@"%@=%@%@",@"lineId",lineID,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",kDeleteCollectUrl,time,lineID,memberId];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kDeleteCollectUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@%@%@",url,time,lineID,memberId];
     
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",lastUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style:kConnectGetType finished:^(id result) {
         
         NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
-        NSLog(@"%@",dic);
         if ([[[dic objectForKey:@"code"] stringValue]isEqualToString:@"0"]) {
             detailView * de = [[detailView alloc]init];
             [de.collectImage setImage:[UIImage imageNamed:@"收藏"]];
@@ -407,24 +417,8 @@ static DetailViewController *detail = nil;
     
 }
 
-
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
-}
-
-
 #pragma mark
-#pragma mark -------------------网络请求
+#pragma mark -------------------线路详情网络请求
 -(void)detailConncet{
    
     [self addIndicator];
@@ -437,26 +431,26 @@ static DetailViewController *detail = nil;
     NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
     NSString * lindId = self.lineNumber;
     NSString * memberId = nil;
-    if (memberId==nil) {
+    if ([[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"]==nil) {
         memberId = @"1";
     }else{
         memberId =[[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
     }
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@%@",lindId,memberId,timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     lindId = [NSString stringWithFormat:@"%@=%@%@",@"lineId",self.lineNumber,@"&"];
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",kDetailUrl,time];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kDetailUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",url,time];
     
     NSString * finallyUrl = [NSString stringWithFormat:@"%@%@%@",lastUrl,lindId,memberId];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",finallyUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         
@@ -477,13 +471,15 @@ static DetailViewController *detail = nil;
         [self createBook];
         [self loadLabelArray];
         [self.bigTableView reloadData];
-        [_indicator stopAnimating];
-        [_indicator removeFromSuperview];
+        [_progressHUD hide:YES];
+        [_progressHUD removeFromSuperViewOnHide];
       
     }];
 
 }
 
+#pragma mark
+#pragma mark ------------------不为空的字段就加入数组,进行展示
 - (void)loadLabelArray {
     
     NSDictionary * dic =[self.detailDic objectForKey:@"data"];
@@ -571,8 +567,7 @@ static DetailViewController *detail = nil;
     if(![HotleName isEqualToString:@""] ||![HotleMiaoshu isEqualToString:@""]||![HotleAddress isEqualToString:@""]){
 
         NSString * all = [NSString stringWithFormat:@"%@%@%@",(HotleName?hotelname:@""),(HotleMiaoshu?hotelMiaoShu:@""),(HotleAddress?hotelAddress:@"")];
-        
-//        [_lableArr addObject:hotelAll];
+    
         [_lableArr addObject:all];
         [_array addObject:@"酒店包含"];
         [_imageArr addObject:cImage];
@@ -582,34 +577,35 @@ static DetailViewController *detail = nil;
         [_array addObject:@"行程介绍"];
         [_imageArr addObject:dImage];
     }
-    if (![notes isEqualToString:@""]) {
-        [_lableArr addObject:notess];
-        [_array addObject:@"预订须知"];
-        [_imageArr addObject:eImage];
-    }
     if (![visa isEqualToString:@""]) {
         [_lableArr addObject:visa];
         [_array addObject:@"签证信息"];
-        [_imageArr addObject:fImage];
+        [_imageArr addObject:eImage];
     }
     if (![costNo isEqualToString:@""]) {
         [_lableArr addObject:CostNO];
         [_array addObject:@"费用不含"];
         [_imageArr addObject:gImage];
     }
+    if (![notes isEqualToString:@""]) {
+        [_lableArr addObject:notess];
+        [_array addObject:@"预订须知"];
+        [_imageArr addObject:fImage];
+    }
     
     [_array enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
-//        if (idx == 0) {
+        if ([obj isEqualToString:@"预订须知"]) {
+            [_expandFlagArr addObject:@NO];
+        }else{
             [_expandFlagArr addObject:@YES];
-       // }
-//        else {
-//            [_expandFlagArr addObject:@NO];
-//        }
+        }
+        
+
     }];
 }
 
 #pragma mark
-#pragma mark ------------------创建上方view
+#pragma mark ------------------TableHeaderView
 -(void)createImageView{
     
     NSDictionary * dic =[self.detailDic objectForKey:@"data"];
@@ -617,7 +613,6 @@ static DetailViewController *detail = nil;
     
     imageLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 620)];
     [imageLable setUserInteractionEnabled:YES];
-    [imageLable setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.15]];
     
     UIImageView * image = [[UIImageView alloc] initWithFrame:CGRectMake(0, 10, imageLable.frame.size.width, 300)];
     if ([thumb isEqualToString:@""]) {
@@ -629,7 +624,7 @@ static DetailViewController *detail = nil;
   
     [imageLable addSubview:image];
     
-    UILabel * view = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, image.frame.size.width, 60)];
+    UIView * view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, image.frame.size.width, 60)];
     [view setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.6]];
     
     UILabel *upLable = [[UILabel alloc] initWithFrame:CGRectMake(15, 10, 270, 20)];
@@ -777,9 +772,8 @@ static DetailViewController *detail = nil;
         [zhiImage setHidden:YES];
     }
     
-    
     //view下面的lable控件
-    UILabel * downLable = [[UILabel alloc]initWithFrame:CGRectMake(0, 350, imageLable.frame.size.width, 280)];
+    UIView * downLable = [[UIView alloc]initWithFrame:CGRectMake(0, 350, imageLable.frame.size.width, 280)];
     [downLable setUserInteractionEnabled:YES];
     [downLable setBackgroundColor:[UIColor whiteColor]];
     [imageLable addSubview:downLable];
@@ -868,12 +862,6 @@ static DetailViewController *detail = nil;
     NSRange range = [travel rangeOfString:@"<"];
     NSString * brString = travel;
     for (int i = 0 ; i < brString.length; i++) {
-//        if (brString.length<=78) {
-//            NSString *qzy = [brString substringWithRange:NSMakeRange(i, 1)];
-//            if ([qzy isEqualToString:@"<"]) {
-//                _i++;
-//            }
-//        }
          if (brString.length<=200){
             NSString *qzy = [brString substringWithRange:NSMakeRange(i, 1)];
             if ([qzy isEqualToString:@"<"]) {
@@ -883,8 +871,8 @@ static DetailViewController *detail = nil;
         
     }
 
-    if (range.location== NSNotFound) {
-        [imageLable setFrame:CGRectMake(0, 10, _bigTableView.frame.size.width, 460)];
+     if (range.location== NSNotFound) {
+        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 450)];
          [_bigTableView setTableHeaderView:imageLable];
         [downLable setFrame:CGRectMake(0, 310, imageLable.frame.size.width, 140)];
         if (travelTime.text.length<=30) {
@@ -896,7 +884,10 @@ static DetailViewController *detail = nil;
         [dianhua setFrame:CGRectMake(15, 103, 70, 20)];
         [dadianhua setFrame:CGRectMake(80, 104, 120, 20)];
         }else{
-        [travelTime setFrame:CGRectMake(79, 55, 205, 40)];
+        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 470)];
+        [_bigTableView setTableHeaderView:imageLable];
+        [downLable setFrame:CGRectMake(0, 310, imageLable.frame.size.width, 160)];
+        [travelTime setFrame:CGRectMake(79, 54, 205, 40)];
         [downLable addSubview:travelTime];
         [cooperate setFrame:CGRectMake(15, 100, 70, 20)];
         [coopLable setFrame:CGRectMake(80, 100, 100, 20)];
@@ -906,7 +897,7 @@ static DetailViewController *detail = nil;
         }
         
     }else if (range.length>0 && _i==1){
-        [imageLable setFrame:CGRectMake(0, 10, _bigTableView.frame.size.width, 480)];
+        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 470)];
          [_bigTableView setTableHeaderView:imageLable];
         [downLable setFrame:CGRectMake(0, 310, imageLable.frame.size.width, 160)];
         if (travelTime.text.length<=49) {
@@ -927,10 +918,10 @@ static DetailViewController *detail = nil;
         [dadianhua setFrame:CGRectMake(80, 134, 120, 20)];
         }
     }else if (range.length>0 && _i==2){
-        [imageLable setFrame:CGRectMake(0, 10, _bigTableView.frame.size.width, 500)];
+        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 490)];
          [_bigTableView setTableHeaderView:imageLable];
         [downLable setFrame:CGRectMake(0, 310, imageLable.frame.size.width, 180)];
-        if (travelTime.text.length<=55) {
+        if (travelTime.text.length<=58) {
             [travelTime setFrame:CGRectMake(79, 52, 205,60)];
             [downLable addSubview:travelTime];
             [cooperate setFrame:CGRectMake(15, 120, 70, 20)];
@@ -948,7 +939,7 @@ static DetailViewController *detail = nil;
             [dadianhua setFrame:CGRectMake(80, 155, 120, 20)];
         }
     }else if(range.length>0 && _i==3){
-        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 520)];
+        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 510)];
         [_bigTableView setTableHeaderView:imageLable];
         [downLable setFrame:CGRectMake(0, 310, imageLable.frame.size.width, 200)];
         if (travelTime.text.length <=100) {
@@ -970,8 +961,17 @@ static DetailViewController *detail = nil;
             [dianhua setFrame:CGRectMake(15, 178, 70, 20)];
             [dadianhua setFrame:CGRectMake(80, 180, 120, 20)];
         
-        }else if (travelTime.text.length <=130 &&travelTime.text.length >=109){
+        }else if (travelTime.text.length <=123 &&travelTime.text.length >=109){
             [travelTime setFrame:CGRectMake(79, 42, 205, 130)];
+            [downLable addSubview:travelTime];
+            [cooperate setFrame:CGRectMake(15, 160, 70, 20)];
+            [coopLable setFrame:CGRectMake(80, 160, 100, 20)];
+            [button setFrame:CGRectMake(170, 160, 80, 20)];
+            [dianhua setFrame:CGRectMake(15, 178, 70, 20)];
+            [dadianhua setFrame:CGRectMake(80, 180, 120, 20)];
+            
+        }else if (travelTime.text.length <=130 &&travelTime.text.length >=124){
+            [travelTime setFrame:CGRectMake(79, 34, 205, 130)];
             [downLable addSubview:travelTime];
             [cooperate setFrame:CGRectMake(15, 160, 70, 20)];
             [coopLable setFrame:CGRectMake(80, 160, 100, 20)];
@@ -981,7 +981,7 @@ static DetailViewController *detail = nil;
         }
         else{
             
-            [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 550)];
+            [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 540)];
             [_bigTableView setTableHeaderView:imageLable];
             [downLable setFrame:CGRectMake(0, 310, imageLable.frame.size.width, 230)];
             [travelTime setFrame:CGRectMake(79, 35, 205, 160)];
@@ -995,7 +995,7 @@ static DetailViewController *detail = nil;
         }
         
     }else if (range.length>0 && _i==4){
-        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 530)];
+        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 520)];
         [_bigTableView setTableHeaderView:imageLable];
         [downLable setFrame:CGRectMake(0, 310, imageLable.frame.size.width, 210)];
         [travelTime setFrame:CGRectMake(79, 50, 205, 100)];
@@ -1006,7 +1006,7 @@ static DetailViewController *detail = nil;
         [dianhua setFrame:CGRectMake(15, 170, 70, 20)];
         [dadianhua setFrame:CGRectMake(80, 172, 120, 20)];
     }else if (range.length>0 && _i==5){
-        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 550)];
+        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 540)];
         [_bigTableView setTableHeaderView:imageLable];
         [downLable setFrame:CGRectMake(0, 310, imageLable.frame.size.width, 230)];
         [travelTime setFrame:CGRectMake(79, 47, 205, 120)];
@@ -1017,7 +1017,7 @@ static DetailViewController *detail = nil;
         [dianhua setFrame:CGRectMake(15, 190, 70, 20)];
         [dadianhua setFrame:CGRectMake(80, 192, 120, 20)];
     }else if (range.length>0 && _i==6){
-        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 560)];
+        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 550)];
         [_bigTableView setTableHeaderView:imageLable];
         [downLable setFrame:CGRectMake(0, 310, imageLable.frame.size.width, 240)];
         [travelTime setFrame:CGRectMake(79, 45, 205, 140)];
@@ -1028,7 +1028,7 @@ static DetailViewController *detail = nil;
         [dianhua setFrame:CGRectMake(15, 207, 70, 20)];
         [dadianhua setFrame:CGRectMake(80, 209, 120, 20)];
     }else if (range.length>0 && _i==7){
-        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 580)];
+        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 570)];
         [_bigTableView setTableHeaderView:imageLable];
         [downLable setFrame:CGRectMake(0, 310, imageLable.frame.size.width, 260)];
         [travelTime setFrame:CGRectMake(79, 44, 205, 160)];
@@ -1039,7 +1039,7 @@ static DetailViewController *detail = nil;
         [dianhua setFrame:CGRectMake(15, 220, 70, 20)];
         [dadianhua setFrame:CGRectMake(80, 222, 120, 20)];
     }else if(range.length>0 && _i==8){
-        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 600)];
+        [imageLable setFrame:CGRectMake(0, 0, _bigTableView.frame.size.width, 590)];
         [_bigTableView setTableHeaderView:imageLable];
         [downLable setFrame:CGRectMake(0, 310, imageLable.frame.size.width, 280)];
         [travelTime setFrame:CGRectMake(79, 45, 205, 180)];
@@ -1054,6 +1054,8 @@ static DetailViewController *detail = nil;
     
 }
 
+#pragma mark
+#pragma mark ------------------------- 咨询电话
 -(void)callOthers{
     
     NSDictionary * dic =[self.detailDic objectForKey:@"data"];
@@ -1065,6 +1067,8 @@ static DetailViewController *detail = nil;
 #pragma mark
 #pragma mark ------------------------- 预订按钮点击时间
 -(void)callCooperate{
+    
+    _j=1;
     
     NSDictionary * dic =[self.detailDic objectForKey:@"data"];
     
@@ -1087,7 +1091,7 @@ static DetailViewController *detail = nil;
 #pragma mark -------------------------tableview
 -(void)goodTableView{
     
-    self.bigTableView = [[UITableView alloc] initWithFrame:CGRectMake( 10, 64, self.view.frame.size.width-20, self.view.frame.size.height-103) style:UITableViewStylePlain];
+    self.bigTableView = [[UITableView alloc] initWithFrame:CGRectMake( 10, 64, self.view.frame.size.width-20, self.view.frame.size.height-113) style:UITableViewStylePlain];
     _bigTableView.delegate = self;
     _bigTableView.dataSource = self;
     if ([[[UIDevice currentDevice]systemVersion]floatValue] >=7.0) {
@@ -1095,6 +1099,7 @@ static DetailViewController *detail = nil;
     }
     [_bigTableView setTableHeaderView:imageLable];
     [_bigTableView setShowsVerticalScrollIndicator:NO];//上下方向的滚动条
+    [_bigTableView setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.005]];
 
     [_bigTableView setSeparatorColor:[UIColor clearColor]];
     [self hiddenLine:_bigTableView];
@@ -1107,7 +1112,7 @@ static DetailViewController *detail = nil;
         if ([_expandFlagArr[indexPath.section] boolValue]) {
             NSString *text = self.lableArr[indexPath.section];
             CGSize fitSize = [text sizeWithFont:[UIFont systemFontOfSize:14] constrainedToSize:CGSizeMake(280, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping];
-            return 44 + fitSize.height + 10;
+            return 44 + fitSize.height +20;
         } else {
             return 44;
         }
@@ -1122,6 +1127,18 @@ static DetailViewController *detail = nil;
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     
     return 1;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+ 
+    return 10;
+    
+}
+-(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
+
+    UILabel * lable = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width-20, 10)];
+    return lable;
+    
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -1139,7 +1156,7 @@ static DetailViewController *detail = nil;
             CGSize fitSize = [text sizeWithFont:[UIFont systemFontOfSize:14] constrainedToSize:CGSizeMake(280, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping];
             cell.contentLabel.text = text;
             CGRect frame = cell.contentLabel.frame;
-            frame.size.height = fitSize.height + 1;
+            frame.size.height = fitSize.height;
             cell.contentLabel.frame = frame;
             cell.contentLabel.hidden = NO;
             [cell.jtImage setImage:[UIImage imageNamed:@"向上"]];
@@ -1149,15 +1166,13 @@ static DetailViewController *detail = nil;
             [cell.jtImage setImage:[UIImage imageNamed:@"向下"]];
 
         }
-        
-      
     }
-    
+
     CALayer * lableLay = [CALayer layer];
-    lableLay.frame =CGRectMake(0, 43, cell.frame.size.width, 0.7);
+    lableLay.frame =CGRectMake(0, 43, cell.frame.size.width, 1);
     lableLay.backgroundColor = [UIColor colorWithRed:204/255.0 green:204/255.0 blue:204/255.0 alpha:1].CGColor;
     [cell.layer addSublayer:lableLay];
-    
+
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     return cell;
 }
@@ -1232,8 +1247,9 @@ static DetailViewController *detail = nil;
         
     }else{
         
-
-        NSDictionary * dic = [NSDictionary dictionaryWithObjectsAndKeys:[[_detailDic objectForKey:@"data"] objectForKey:@"fromCity"],@"detailFrom",[[_detailDic objectForKey:@"data"] objectForKey:@"toCity"],@"detailTo",[[_detailDic objectForKey:@"data"] objectForKey:@"fromCityCode"],@"detailFromCode",[[_detailDic objectForKey:@"data"] objectForKey:@"areaId"],@"detailToCode", nil];
+        NSString * tocityCode =[[_detailDic objectForKey:@"data"] objectForKey:@"toCityForOrder"];
+        
+        NSDictionary * dic = [NSDictionary dictionaryWithObjectsAndKeys:[[_detailDic objectForKey:@"data"] objectForKey:@"fromCity"],@"detailFrom",[[_detailDic objectForKey:@"data"] objectForKey:@"toCityNameForOrder"],@"detailTo",[[_detailDic objectForKey:@"data"] objectForKey:@"fromCityForOrder"],@"detailFromCode",tocityCode,@"detailToCode", nil];
         [[NSNotificationCenter defaultCenter]postNotificationName:@"nicai" object:nil userInfo:dic];
         AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
         appDelegate.tab.selectedIndex = 2;
@@ -1248,10 +1264,25 @@ static DetailViewController *detail = nil;
     NSString *telStr = [NSString stringWithFormat:@"%@%@",@"tel://",str];
     
     [[UIApplication sharedApplication] openURL:[NSURL URLWithString:telStr]];
+//    [[EaseMob sharedInstance].chatManager asyncRegisterNewAccount:@" " password:@"123456" withCompletion:^(NSString *username, NSString *password, EMError *error) {
+//        if (!error) {
+//            NSLog(@"登陆成功");
+//        
+//        }
+//        
+//    } onQueue:nil];
+//    [[EaseMob sharedInstance].chatManager addDelegate:self delegateQueue:nil];
+//    // 创建一个聊天对象
+//    EMChatText *text = [[EMChatText alloc] initWithText:@"你好，环信!"];
+//    // 创建一个Message Body
+//    EMTextMessageBody *body = [[EMTextMessageBody alloc] initWithChatObject:text];
+//    // 创建一个Message对象
+//    EMMessage *msg =[[ EMMessage alloc] initWithReceiver:@"bot" bodies:[NSArray arrayWithObject:body]];
+//    // 发送消息
+//    [[EaseMob sharedInstance].chatManager sendMessage:msg progress:nil error:nil];
     
+
 }
-
-
 
 - (void)didReceiveMemoryWarning
 {

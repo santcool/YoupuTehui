@@ -13,6 +13,8 @@
 @interface WebViewController : UIViewController<UIWebViewDelegate,UIScrollViewDelegate>
 
 @property (nonatomic,strong) NSString * string;
+@property (nonatomic,strong) NSString * topicImage;
+@property (nonatomic,strong) NSString * topicTitle;
 @property (nonatomic, assign) id<webDelegate> delegate;
 
 @end

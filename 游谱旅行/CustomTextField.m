@@ -19,6 +19,8 @@
     return self;
 }
 
+#pragma mark
+#pragma mark --------------控制光标让文字从指定的位置开始输入
 - (CGRect)textRectForBounds:(CGRect)bounds {
     if (bounds.size.height > 15) {
         return CGRectMake(bounds.origin.x + 10.0f, bounds.origin.y, bounds.size.width, bounds.size.height);

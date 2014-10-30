@@ -11,7 +11,7 @@
 
 @interface IndividualViewController ()
 {
-    UIActivityIndicatorView * _indicator;//菊花
+    MBProgressHUD * _progressHUD;
 }
 
 @property (nonatomic, strong) UINavigationController * liveNavigation;
@@ -28,7 +28,7 @@
     if (self) {
         // Custom initialization
         
-        self.array = [NSArray arrayWithObjects:@"头像",@"昵称",@"手机号",@"现居住地址", nil];
+        self.array = [NSArray arrayWithObjects:@"头像",@"昵称",@"手机号",@"现居住地", nil];
         self.downArray = [NSArray arrayWithObjects:@"生日",@"性别",@"个性签名",@"旅行偏好", nil];
         self.qitaArray= [NSArray arrayWithObjects:@"修改密码",@"关于我们",@"意见反馈", nil];
         self.userInfoDic = [[NSMutableDictionary alloc]init];
@@ -54,24 +54,30 @@
     
 }
 
+-(void)addIndicator
+{
+    _progressHUD = [[MBProgressHUD alloc] initWithView:self.view];
+    [self.view addSubview:_progressHUD];
+    [self.view bringSubviewToFront:_progressHUD];
+    [_progressHUD setMode:MBProgressHUDModeIndeterminate];
+    [_progressHUD setLabelText:@"加载中..."];
+    [_progressHUD showWhileExecuting:@selector(myProgressTask) onTarget:self withObject:nil animated:YES];
+}
+-(void) myProgressTask{
+    float progress = 0.0f;
+    while (progress < 1.0f) {
+        progress -=0.01f;
+        _progressHUD.progress = progress;
+        usleep(50000);
+    }
+}
+
+#pragma mark 
+#pragma mark ------------------ 协议传值,电话号码
 -(void)dianhuahaoma:(NSNotification *)noti{
     
     _mobileNumber = [[noti userInfo]objectForKey:@"dianhua"];
     [_individualTable reloadData];
-}
-
-//添加菊花
--(void)addIndicator
-{
-    if (!_indicator.isAnimating) {
-        //添加菊花
-        _indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-        [_indicator setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.8]];
-        [_indicator setColor:[UIColor colorWithRed:224/255.0  green:89/255.0 blue:60/255.0 alpha:1]];
-        [_indicator setFrame:CGRectMake(0,0, self.view.frame.size.width, self.view.frame.size.height)];
-        [_indicator startAnimating];
-        [self.view addSubview:_indicator];
-    }
 }
 
 -(void)qzy{
@@ -79,15 +85,18 @@
     self.title = @"个人设置";
     
     [self.navigationController.navigationBar setTranslucent:NO];
-    [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:255/255.0 green:97/255.0 blue:70/255.0 alpha:1]];
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
+    [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
     self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
     
 }
 
@@ -97,20 +106,6 @@
         
     }];
     
-}
-
-- (NSString *)md5:(NSString *)str
-{
-    const char *cStr = [str UTF8String];
-    unsigned char result[CC_MD5_DIGEST_LENGTH];
-    CC_MD5(cStr, strlen(cStr), result);
-    return [[NSString stringWithFormat:
-             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
-             result[0], result[1], result[2], result[3],
-             result[4], result[5], result[6], result[7],
-             result[8], result[9], result[10], result[11],
-             result[12], result[13], result[14], result[15]
-             ] lowercaseString];
 }
 
 #pragma mark
@@ -127,24 +122,23 @@
     NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
     NSString * memberId = [[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
     NSString * QZY = [NSString stringWithFormat:@"%@%@%@",memberId,timeString,key];
-    NSString * qzy = [self md5:QZY];
+    NSString * qzy = [TeHuiModel md5:QZY];
     NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-    NSString * qaz = [self md5:qwe];
+    NSString * qaz = [TeHuiModel md5:qwe];
     
     //接口拼接
     NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
     memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
-    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",kUserInfoUrl,time];
+    NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kUserInfoUrl];
+    NSString * lastUrl = [NSString stringWithFormat:@"%@%@",url,time];
     
     NSString * finallyUrl = [NSString stringWithFormat:@"%@%@",lastUrl,memberId];
     NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
     NSString * finally = [NSString stringWithFormat:@"%@%@",finallyUrl,sign];
-    NSLog(@"%@",finally);
     
     [ConnectModel connectWithParmaters:nil url:finally style: kConnectGetType finished:^(id result) {
         
         NSDictionary * dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
-        NSLog(@"%@",dic);
         
         [self.userInfoDic addEntriesFromDictionary:dic];
         
@@ -162,11 +156,32 @@
         _emailStr =[[_userInfoDic objectForKey:@"data"] objectForKey:@"email"];
         }
         
+        [self userMessage];
         [_individualTable reloadData];
-        [_indicator stopAnimating];
-        [_indicator removeFromSuperview];
+        [_progressHUD hide:YES];
+        [_progressHUD removeFromSuperViewOnHide];
         
     }];    
+}
+
+#pragma mark
+#pragma mark ------------tableHeaderView
+-(void)userMessage{
+    UIView * view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 75)];
+    [view setBackgroundColor:[UIColor colorWithRed:225/255.0 green:225/255.0 blue:225/255.0 alpha:1]];
+    view.layer.borderColor =[UIColor colorWithRed:204/255.0 green:204/255.0 blue:204/255.0 alpha:1].CGColor;
+    view.layer.borderWidth = 0.5;
+    UILabel * lable = [[UILabel alloc] initWithFrame:CGRectMake(10, 15, self.view.frame.size.width, 20)];
+    [lable setText:@"您当前账户信息为:"];
+    [lable setTextColor:[UIColor colorWithRed:173/255.0 green:173/255.0 blue:173/255.0 alpha:1]];
+    [lable setFont:[UIFont systemFontOfSize:16]];
+    [view addSubview:lable];
+    UILabel * userLable = [[UILabel alloc] initWithFrame:CGRectMake(10, 40, self.view.frame.size.width, 20)];
+    [userLable setText:_emailStr];
+    [lable setTextColor:[UIColor colorWithRed:173/255.0 green:173/255.0 blue:173/255.0 alpha:1]];
+    [userLable setFont:[UIFont systemFontOfSize:18]];
+    [view addSubview:userLable];
+    [_individualTable setTableHeaderView:view];
 }
 
 #pragma mark
@@ -231,6 +246,7 @@
     _individualTable.delegate = self;
     [_individualTable setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.11]];
     [self setExtraCellLineHidden:_individualTable];
+    
     [self.view addSubview:_individualTable];
     
     if ([[[UIDevice currentDevice] systemVersion] floatValue]>=7.0) {
@@ -249,18 +265,17 @@
     [ShareSDK cancelAuthWithType:ShareTypeQQSpace];
     [ShareSDK cancelAuthWithType:ShareTypeSinaWeibo];
     
+    [[EaseMob sharedInstance].chatManager logoffWithError:nil];
+    
     AppDelegate *appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-    appDelegate.tab.selectedIndex = 0;
+    appDelegate.tab.selectedIndex = 3;
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-#pragma mark - tableview
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 4;
 }
 
-#pragma mark
-#pragma mark 协议啊啊啊啊啊啊啊啊
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     
     if (section==0) {
@@ -276,7 +291,7 @@
 
 -(CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
     if (section==0) {
-        return 75;
+        return 0;
     }else if (section==1){
         return 20;
     }else if(section==2){
@@ -289,23 +304,13 @@
 -(UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
     
     if (section==0) {
-        UIView * view = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 75)];
-        [view setBackgroundColor:[UIColor colorWithRed:225/255.0 green:225/255.0 blue:225/255.0 alpha:1]];
-        UILabel * lable = [[UILabel alloc] initWithFrame:CGRectMake(10, 15, self.view.frame.size.width, 20)];
-        [lable setText:@"您当前账户信息为:"];
-        [lable setTextColor:[UIColor colorWithRed:173/255.0 green:173/255.0 blue:173/255.0 alpha:1]];
-        [lable setFont:[UIFont systemFontOfSize:16]];
-        [view addSubview:lable];
-        UILabel * userLable = [[UILabel alloc] initWithFrame:CGRectMake(10, 40, self.view.frame.size.width, 20)];
-        [userLable setText:_emailStr];
-        [lable setTextColor:[UIColor colorWithRed:173/255.0 green:173/255.0 blue:173/255.0 alpha:1]];
-        [userLable setFont:[UIFont systemFontOfSize:18]];
-        [view addSubview:userLable];
-        return view;
+        return nil;
     }else if (section==1 || section==2){
         
         UILabel * lable = [[UILabel alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 20)];
         [lable setBackgroundColor:[UIColor colorWithRed:235/255.0 green:235/255.0 blue:235/255.0 alpha:1]];
+        lable.layer.borderColor = [UIColor colorWithRed:204/255.0 green:204/255.0 blue:204/255.0 alpha:1].CGColor;
+        lable.layer.borderWidth = 0.5;
         return lable;
     }else{
         UIView * view= [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 60)];
@@ -362,7 +367,7 @@
             case 0:{
                 if ([_myPicture isEqualToString:@""])
                 {
-                    [cell.image setImage:[UIImage imageNamed:@"默认头像"]];
+                    [cell.image setImage:[UIImage imageNamed:@"默认头像.jpg"]];
                 }
                 else
                 {
@@ -372,7 +377,7 @@
                    }
                     else
                    {
-                    [cell.image setImageWithURL:[NSURL URLWithString:_myPicture]];
+                    [cell.image setImageWithURL:[NSURL URLWithString:_myPicture]placeholderImage:[UIImage imageNamed:@"默认头像.jpg"]];
                    }
                 }
                 [cell.button setFrame:CGRectMake(295, 25, 20, 20)];
@@ -380,14 +385,20 @@
                 break;
             case 1:
                 [cell.lable setText:_myName];
+                [cell.image setImage:[UIImage imageNamed:@"qwe"]];
+                [cell.button setFrame:CGRectMake(295, 10, 20, 20)];
                 break;
             case 2:
                 
                 [cell.lable setText:_mobileNumber];
+                [cell.image setImage:[UIImage imageNamed:@"qwe"]];
+                [cell.button setFrame:CGRectMake(295, 10, 20, 20)];
                 
                 break;
             case 3:
                 [cell.lable setText:_address];
+                [cell.image setImage:[UIImage imageNamed:@"qwe"]];
+                [cell.button setFrame:CGRectMake(295, 10, 20, 20)];
                 break;
             default:
                 break;
@@ -399,15 +410,20 @@
         {
             case 0:
                 [cell.lable setText:_birth];
+                [cell.image setImage:[UIImage imageNamed:@"qwe"]];
+                [cell.button setFrame:CGRectMake(295, 10, 20, 20)];
                 break;
             case 1:
                 [cell.lable setText:_sex];
+                [cell.image setImage:[UIImage imageNamed:@"qwe"]];
+                [cell.button setFrame:CGRectMake(295, 10, 20, 20)];
                 break;
             case 2:
             {
                 if (_character.length<=13) {
                     [cell.lable setFrame:CGRectMake(100, 5, 190, 30)];
-                }else if(_character.length<=26){
+                    [cell.lable setTextAlignment:NSTextAlignmentRight];
+                }else if(_character.length<=26 && _character.length>13){
                     [cell.lable setFrame:CGRectMake(100, 5, 190, 50)];
                     [cell.lable setTextAlignment:NSTextAlignmentLeft];
                     [cell.button setFrame:CGRectMake(295, 20, 20, 20)];
@@ -421,11 +437,14 @@
                     [cell.button setFrame:CGRectMake(295, 30, 20, 20)];
                 }
                 [cell.lable setText:_character];
+                [cell.image setImage:[UIImage imageNamed:@"qwe"]];
             }
 
                 break;
             case 3:
                 [cell.lable setText:_favorite];
+                [cell.image setImage:[UIImage imageNamed:@"qwe"]];
+                [cell.button setFrame:CGRectMake(295, 10, 20, 20)];
                 break;
             default:
                 break;
@@ -434,6 +453,18 @@
     }if (indexPath.section==2){
         [cell.textLabel setText:[_qitaArray objectAtIndex:indexPath.row]];
         switch (indexPath.row) {
+            case 0:
+            {
+                [cell.image setImage:[UIImage imageNamed:@"qwe"]];
+                [cell.button setFrame:CGRectMake(295, 10, 20, 20)];
+            }
+                break;
+            case 1:
+            {
+                [cell.image setImage:[UIImage imageNamed:@"qwe"]];
+                [cell.button setFrame:CGRectMake(295, 10, 20, 20)];
+            }
+                break;
             case 2:
                 [cell.image setImage:[UIImage imageNamed:@"qwe"]];
                 [cell.button setFrame:CGRectMake(295, 10, 20, 20)];
@@ -624,11 +655,19 @@
     }
 }
 
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark
+#pragma mark -------------上传头像及修改头像
 -(void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
     UIImage * image = [info objectForKey:UIImagePickerControllerEditedImage];
     
     picture=image;
+    NSData *imageData = UIImageJPEGRepresentation(image, 0.5);
     
     if (picker.sourceType == UIImagePickerControllerSourceTypeCamera) {
         UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);//将所拍照片保存到相册
@@ -641,21 +680,21 @@
         NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
         NSString * memberId =[[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
         NSString * QZY = [NSString stringWithFormat:@"%@%@%@",memberId,timeString,key];
-        NSString * qzy = [self md5:QZY];
+        NSString * qzy = [TeHuiModel md5:QZY];
         NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-        NSString * qaz = [self md5:qwe];
+        NSString * qaz = [TeHuiModel md5:qwe];
         
         //接口拼接
         NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
         memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
-        NSString * lastUrl = [NSString stringWithFormat:@"%@%@",kIconUrl,time];
+        NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kIconUrl];
+        NSString * lastUrl = [NSString stringWithFormat:@"%@%@",url,time];
         
         NSString * finallyUrl = [NSString stringWithFormat:@"%@%@",lastUrl,memberId];
         NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
         NSString * finally = [NSString stringWithFormat:@"%@%@",finallyUrl,sign];
-        NSLog(@"%@",finally);
         
-        [ConnectModel uploadUserIcon:nil icon:UIImagePNGRepresentation(image) url:finally finished:^(id result) {
+        [ConnectModel uploadUserIcon:nil icon:imageData url:finally finished:^(id result) {
             NSDictionary * dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
             NSLog(@"%@",dic);
             [self.individualTable reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0]]
@@ -672,27 +711,28 @@
         NSString *key = @"CtUyV$8MGoK8u5L*P0Q50T/b8S9iclS*LQqo";
         NSString * memberId =[[NSUserDefaults standardUserDefaults] objectForKey:@"memberId"];
         NSString * QZY = [NSString stringWithFormat:@"%@%@%@",memberId,timeString,key];
-        NSString * qzy = [self md5:QZY];
+        NSString * qzy = [TeHuiModel md5:QZY];
         NSString * qwe = [NSString stringWithFormat:@"%@%@",key,qzy];
-        NSString * qaz = [self md5:qwe];
+        NSString * qaz = [TeHuiModel md5:qwe];
         
         //接口拼接
         NSString * time = [NSString stringWithFormat:@"%@=%@%@",@"timestamp",timeString,@"&"];
         memberId = [NSString stringWithFormat:@"%@=%@%@",@"memberId",memberId,@"&"];
-        NSString * lastUrl = [NSString stringWithFormat:@"%@%@",kIconUrl,time];
+        NSString * url = [NSString stringWithFormat:@"%@%@",kPrefixUrl,kIconUrl];
+        NSString * lastUrl = [NSString stringWithFormat:@"%@%@",url,time];
         
         NSString * finallyUrl = [NSString stringWithFormat:@"%@%@",lastUrl,memberId];
         NSString * sign = [NSString stringWithFormat:@"%@=%@",@"sign",qaz];
         NSString * finally = [NSString stringWithFormat:@"%@%@",finallyUrl,sign];
-        NSLog(@"%@",finally);
         
-        [ConnectModel uploadUserIcon:nil icon:UIImagePNGRepresentation(image) url:finally finished:^(id result) {
+        [ConnectModel uploadUserIcon:nil icon:imageData url:finally finished:^(id result) {
             NSDictionary * dic = [NSJSONSerialization JSONObjectWithData:result options:NSJSONReadingMutableContainers error:nil];
             NSLog(@"%@",dic);
             [self.individualTable reloadRowsAtIndexPaths:@[[NSIndexPath indexPathForRow:0 inSection:0]]
                                         withRowAnimation:UITableViewRowAnimationNone];
         }];
     }
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
     [picker dismissViewControllerAnimated:YES completion:nil];
 
 }

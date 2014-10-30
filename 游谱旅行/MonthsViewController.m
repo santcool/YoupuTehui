@@ -24,25 +24,22 @@
         
         self.exit = NO;
         _i = 0;
+        _j = 0;
         
     }
     return self;
-}
-
--(void)viewWillAppear:(BOOL)animated{
-    [self setNavigationBar];
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    [self.view setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.05]];
+
+    [self setNavigationBar];
     
     [self createLable];
     
     [self createTextField];
-    
     
 }
 
@@ -50,20 +47,27 @@
 
 -(void)setNavigationBar{
     
+    [self.view setBackgroundColor:[UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:0.05]];
     self.title = @"出行时间";
     self.navigationController.navigationBar.translucent = NO;
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:224/255.0 green:89/255.0 blue:60/255.0 alpha:1]];
     
     UIColor * cc = [UIColor whiteColor];
-    NSDictionary * dict = [NSDictionary dictionaryWithObject:cc forKey:NSForegroundColorAttributeName];
+    UIFont * font =[UIFont systemFontOfSize:18];
+    NSDictionary * dict = @{NSForegroundColorAttributeName:cc,NSFontAttributeName:font};
     self.navigationController.navigationBar.titleTextAttributes = dict;
     
-    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"back"] style:UIBarButtonItemStylePlain target:self action:@selector(backActon)];
-    self.navigationItem.leftBarButtonItem.tintColor = [UIColor whiteColor];
-    [self.navigationItem.leftBarButtonItem setImageInsets:UIEdgeInsetsMake(15, 0, 15, 30)];
+    UIButton *menuBtn = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];
+    [menuBtn setImage:[UIImage imageNamed:@"back"] forState:UIControlStateNormal];
+    [menuBtn addTarget:self action:@selector(backActon) forControlEvents:UIControlEventTouchUpInside];
+    self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:menuBtn];
 }
 
 -(void)backActon{
+    
+    if (_leftTime !=nil && _rightTime !=nil) {
+        [self.delegate time:_leftTime arrive:_rightTime exit:YES];
+    }
     
     [self dismissViewControllerAnimated:YES completion:^{
         
@@ -77,12 +81,8 @@
     [lable setText:@"    选择您出发的时间"];
     [lable setTextColor:[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1]];
     [lable setFont:[UIFont systemFontOfSize:12]];
-    
-    CALayer *lay =[CALayer layer];
-    lay.frame = CGRectMake(0, 40, lable.frame.size.width, 1);
-    lay.backgroundColor =[UIColor colorWithRed:215/255.0 green:215/255.0 blue:215/255.0 alpha:1].CGColor;
-    [lable.layer addSublayer:lay];
-    
+    lable.layer.borderColor = [UIColor colorWithRed:204/255.0 green:204/255.0 blue:204/255.0 alpha:1].CGColor;
+    lable.layer.borderWidth = 0.5;
     [self.view addSubview:lable];
     
 }
@@ -101,15 +101,11 @@
     [dateFormatter setDateFormat:@"yyyy-MM-dd"];
     NSString *destDateString = [dateFormatter stringFromDate:selected];
     
-    UILabel * bigLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 55, self.view.frame.size.width, 40)];
+    UILabel * bigLable = [[UILabel alloc] initWithFrame:CGRectMake(0, 40, self.view.frame.size.width, 40)];
     [bigLable setUserInteractionEnabled:YES];
-    CALayer * upLay = [CALayer layer];
-    upLay.frame = CGRectMake(0, 0, self.view.frame.size.width, 1);
-    upLay.backgroundColor = [UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1].CGColor;
-    [bigLable.layer addSublayer:upLay];
     CALayer * downLay = [CALayer layer];
     downLay.frame = CGRectMake(0, 40, self.view.frame.size.width, 1);
-    downLay.backgroundColor = [UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1].CGColor;
+    downLay.backgroundColor = [UIColor colorWithRed:215/255.0 green:215/255.0 blue:215/255.0 alpha:1].CGColor;
     [bigLable.layer addSublayer:downLay];
     [self.view addSubview:bigLable];
     
@@ -119,7 +115,11 @@
     [_field setFont:[UIFont systemFontOfSize:14]];
     _field.delegate = self;
     [_field setTextAlignment:NSTextAlignmentCenter];
-    [_field setText:destDateString];
+    if (_leftTime== nil) {
+        [_field setText:destDateString];
+    }else{
+       [_field setText:_leftTime];
+    }
     [bigLable addSubview:_field];
     
     UILabel *Lable = [[UILabel alloc] initWithFrame:CGRectMake(150, 10, 20, 20)];
@@ -134,13 +134,17 @@
     [_fields setFont:[UIFont systemFontOfSize:14]];
     _fields.delegate = self;
     [_fields setTextAlignment:NSTextAlignmentCenter];
-    [_fields setText:destDateString];
+    if (_rightTime== nil) {
+        [_fields setText:destDateString];
+    }else{
+        [_fields setText:_rightTime];
+    }
     [bigLable addSubview:_fields];
     
     timeButton = [[UIButton alloc]initWithFrame:CGRectMake(5, 106, self.view.frame.size.width/2-10, 40)];
     timeButton.layer.borderWidth =1;
     timeButton.layer.borderColor = [UIColor colorWithRed:200/255.0 green:200/255.0 blue:200/255.0 alpha:1].CGColor;
-    timeButton.layer.cornerRadius = 10;
+    timeButton.layer.cornerRadius = 5;
     timeButton.layer.masksToBounds = YES;
     [timeButton setTitle:@"不限时间" forState:UIControlStateNormal];
     [timeButton setTitleColor:[UIColor colorWithRed:153/255.0 green:153/255.0 blue:153/255.0 alpha:1] forState:UIControlStateNormal];
@@ -170,11 +174,13 @@
     if (textField==self.field) {
         
         _datePicker.tag = 0;
+        _i=1;
         [_datePicker setHidden:NO];
         [finishButton setHidden:NO];
     }else{
         
         _datePicker.tag = 1;
+        _j=1;
         [_datePicker setHidden:NO];
         [finishButton setHidden:NO];
     }
@@ -221,9 +227,31 @@
 
 -(void)chuanzhi{
     
-    [self.delegate time:self.field.text arrive:self.fields.text exit:YES];
-    [self dismissViewControllerAnimated:NO completion:nil];
+    NSTimeInterval left = 0;
+    NSTimeInterval right = 0;
     
+
+    if (_datePicker.tag==0 && _i==1) {
+        
+        NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
+        left =[dat timeIntervalSince1970];
+    }
+    if (_datePicker.tag==1 && _j==1) {
+        NSDate* dat = [NSDate dateWithTimeIntervalSinceNow:0];
+         right =[dat timeIntervalSince1970];
+    }
+    if (right-left >0) {
+        
+        [self.delegate time:self.field.text arrive:self.fields.text exit:YES];
+        [self dismissViewControllerAnimated:NO completion:nil];
+    }else{
+        
+        UIActionSheet * sheet = [[UIActionSheet alloc]initWithTitle:@"选择理想的结束时间" delegate:nil cancelButtonTitle:@"确定" destructiveButtonTitle:nil otherButtonTitles:nil, nil];
+        [sheet showInView:self.view];
+    }
+    
+    _i=0;
+    _j=0;
 }
 
 

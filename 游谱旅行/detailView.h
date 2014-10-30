@@ -8,13 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
-@interface detailView : UIView<UIAlertViewDelegate>
+@interface detailView : UIView
 
 @property (nonatomic, strong) UILabel * lable;
 @property (nonatomic, strong) TouchImage * backImage;
 @property (nonatomic, strong) TouchImage * image;
 @property (nonatomic, strong) TouchImage * collectImage;
 @property (nonatomic, strong) UIButton * button;
-
+@property (nonatomic, strong) UIButton * fenxiang;
+@property (nonatomic, strong) UIButton * collect;
 
 @end
